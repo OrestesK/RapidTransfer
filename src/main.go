@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
@@ -18,7 +19,7 @@ import (
 
 const protocolID = "RapidTransfer"
 
-func main() {
+func initialize_node() host.Host {
 	// Create p2p node
 	// Listen only on ( ipv4 and tcp )
 	node, err := libp2p.New(
@@ -28,6 +29,47 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	return node
+}
+
+func server(node host.Host) {
+	node.SetStreamHandler(protocolID, func(s network.Stream) {
+		go writeCounter(s)
+		go readCounter(s)
+	})
+	key := fmt.Sprintf("%s/p2p/%s", node.Addrs()[0], node.ID()) // Format key (it's the address + "/p2p/" + id)
+	fmt.Println(key)
+}
+
+func client(node host.Host, peerAddr string) {
+	// Parse the multiaddr string.
+	peerMA, err := multiaddr.NewMultiaddr(peerAddr)
+	if err != nil {
+		panic(err)
+	}
+	peerAddrInfo, err := peer.AddrInfoFromP2pAddr(peerMA)
+	if err != nil {
+		panic(err)
+	}
+
+	// Connect to given address
+	if err := node.Connect(context.Background(), *peerAddrInfo); err != nil {
+		panic(err)
+	}
+	fmt.Println("Connected to", peerAddrInfo.String())
+
+	// Create a stream with peer
+	s, err := node.NewStream(context.Background(), peerAddrInfo.ID, protocolID)
+	if err != nil {
+		panic(err)
+	}
+
+	go writeCounter(s) // Start Write thread
+	go readCounter(s)  // Start Read thread
+}
+
+func main() {
+	node := initialize_node() // treat this as the 'connection parameters'
 	defer node.Close()
 
 	// parse given address (TODO this will be replaced with database)
@@ -35,39 +77,10 @@ func main() {
 	flag.Parse()
 
 	if *peerAddr == "" {
-		node.SetStreamHandler(protocolID, func(s network.Stream) {
-			go writeCounter(s)
-			go readCounter(s)
-		})
-		key := fmt.Sprintf("%s/p2p/%s", node.Addrs()[0], node.ID()) // Format key (it's the address + "/p2p/" + id)
-		fmt.Println(key)
-
-		// if peer address was provided, connect to it
+		server(node)
 	} else {
-		// Parse the multiaddr string.
-		peerMA, err := multiaddr.NewMultiaddr(*peerAddr)
-		if err != nil {
-			panic(err)
-		}
-		peerAddrInfo, err := peer.AddrInfoFromP2pAddr(peerMA)
-		if err != nil {
-			panic(err)
-		}
-
-		// Connect to given address
-		if err := node.Connect(context.Background(), *peerAddrInfo); err != nil {
-			panic(err)
-		}
-		fmt.Println("Connected to", peerAddrInfo.String())
-
-		// Create a stream with peer
-		s, err := node.NewStream(context.Background(), peerAddrInfo.ID, protocolID)
-		if err != nil {
-			panic(err)
-		}
-
-		go writeCounter(s) // Start Write thread
-		go readCounter(s)  // Start Read thread
+		// if peer address was provided, connect to it
+		client(node, *peerAddr)
 	}
 
 	sigCh := make(chan os.Signal)                         // create channel

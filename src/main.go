@@ -75,7 +75,7 @@ func main() {
 	} else if len(result) == 2 {
 		// Send file
 	} else {
-		log.Fatal("No arguements given that match anything available")
+		log.Fatal("No arguments given that match anything available")
 	}
 
 	fmt.Println(checkInputs(flags))

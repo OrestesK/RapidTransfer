@@ -36,3 +36,25 @@ func readSQLFile(filePath string) (string, error) {
 	}
 	return string(data), nil
 }
+
+// Retrieves a user's freind code based on their name, which is passed in
+func getUserKey(name string) int {
+	conn := getConn()
+	var userKey int
+	err := conn.QueryRow("SELECT friendCode FROM user WHERE name=%s", (name)).Scan(&userKey)
+	if err != nil {
+		fmt.Println("Query failed")
+	}
+	return userKey
+}
+
+// Retrieves a user's id based on their name, which is passed in
+func getUserID(name string) int {
+	conn := getConn()
+	var userID int
+	err := conn.QueryRow("SELECT id FROM user WHERE name=%s", (name)).Scan(&userID)
+	if err != nil {
+		fmt.Println("Query failed")
+	}
+	return userID
+}

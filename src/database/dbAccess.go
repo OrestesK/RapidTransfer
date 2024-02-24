@@ -29,23 +29,15 @@ func GetConn() *pgx.Conn {
 }
 
 func InitializeDatabase() {
-	fmt.Print("Hello")
+	fmt.Print("Hello! ")
 	var conn *pgx.Conn = GetConn()
-	conn.Exec("DROP TABLE transfer; DROP TABLE users; DROP TABLE friends; DROP TABLE user;")
+	// conn.Exec("DROP TABLE transfer; DROP TABLE users; DROP TABLE friends; DROP TABLE user;")
 
 	conn.Exec("CREATE TABLE IF NOT EXISTS transfer (userFrom INT NOT NULL, userTo INT NOT NULL, keyword VARCHAR(100))")
-	_, err := conn.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL DEFAULT '', keyword VARCHAR(100), macaddr VARCHAR(100))")
-	fmt.Printf("err: %v\n", err)
+	conn.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL DEFAULT '', keyword VARCHAR(100), macaddr VARCHAR(100))")
 	conn.Exec("CREATE TABLE IF NOT EXISTS friends (orig_user INT NOT NULL, friend_id INT NOT NULL, total_transfers INT NOT NULL DEFAULT 0)")
 
-	// _, err2 := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", "Emmet", "Keyword", "Something")
-	// fmt.Printf("err2: %v\n", err2)
 }
-
-// func DropTables() {
-// 	var conn *pgx.Conn = GetConn()
-// 	conn.Exec("DROP TABLE transfer; DROP TABLE user; DROP TABLE friends;")
-// }
 
 func generateFriendCode() string {
 	rand.Seed(time.Now().UnixNano())
@@ -81,8 +73,7 @@ func HandleAccountStartup() {
 	if name == "" {
 		// not found or empty username.
 		// Prompt user for inputs
-		fmt.Print("You appear to be a new user! ")
-		fmt.Print("Enter your username to get started: ")
+		fmt.Print("You appear to be a new user!\nEnter your username to get started: ")
 		_, err := fmt.Scan(&name)
 		if err != nil {
 			// fmt.Println("Error reading input:", err)
@@ -95,7 +86,7 @@ func HandleAccountStartup() {
 		fmt.Print("Creating account!\n\n")
 
 	} else {
-		fmt.Print("You already exist! Logging you in!")
+		fmt.Printf("You already exist! Logging you in as %s!\n\n", name)
 	}
 }
 
@@ -118,8 +109,7 @@ func getMacAddress() (string, error) {
 func CreateAccount(username string, macAddress string) {
 	conn := GetConn()
 	code := generateFriendCode()
-	tag, err := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", username, code, macAddress)
-	fmt.Printf("tag.RowsAffected(): %v\n", tag.RowsAffected())
+	_, err := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", username, code, macAddress)
 	if err != nil {
 		fmt.Printf("err.Error(): %v\n", err.Error())
 	}

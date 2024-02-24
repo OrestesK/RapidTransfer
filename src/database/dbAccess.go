@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"os"
+	// "os"
 
 	"github.com/jackc/pgx"
 )

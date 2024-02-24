@@ -173,12 +173,6 @@ func GetTransaction(keyword string) (names []string) {
 	return
 }
 
-// func CreateTransaction(user1 string, user2 string, keyword string) {
-// 	conn := GetConn()
-// 	conn.Exec("INSERT INTO transaction ")
-
-// }
-
 // Adds a friend to a senders friends list based on their friend code
 func AddFriend(friendCode int, senderName string) (friendName string) {
 	conn := GetConn()
@@ -221,8 +215,17 @@ func AreMutualFriends(userName1, userName2 string) (areMutuals bool) {
 	return
 }
 
-// Allows two users to send a file to eachother
-// func PerformTransaction(senderName, recieverName string) {
-// 	conn := GetConn()
-
-// }
+// Allows two users to send files to eachother
+func PerformTransaction(senderName, recieverName string) (keyword string) {
+	conn := GetConn()
+	FromUserID := GetUserID(senderName)
+	ToUserID := GetUserID(recieverName)
+	if AreMutualFriends(senderName, recieverName) {
+		keyword = generateFriendCode()
+		err := conn.QueryRow("INSERT INTO transfer VALUES (%s,%s,%s)", FromUserID, ToUserID, keyword)
+		if err != nil {
+			fmt.Println("Query failed")
+		}
+	}
+	return
+}

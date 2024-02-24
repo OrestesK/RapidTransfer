@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	// "os"
 
 	"github.com/jackc/pgx"
 )
@@ -56,10 +55,20 @@ func GetUserID(name string) (userID int) {
 	return
 }
 
-// Retrieves a user's name based on their friend code, which is passed in
-func GetUserName(id int) (userName string) {
+// Retrieves a user's name based on their id, which is passed in
+func GetUserNameByID(id int) (userName string) {
 	conn := GetConn()
 	err := conn.QueryRow("SELECT name FROM user WHERE id=%s", (id)).Scan(&userName)
+	if err != nil {
+		fmt.Println("Query failed")
+	}
+	return
+}
+
+// Retrieves a user's name based on their friend code, which is passed in
+func GetUserNameByFriendCode(friendCode int) (userName string) {
+	conn := GetConn()
+	err := conn.QueryRow("SELECT name FROM user WHERE id=%s", (friendCode)).Scan(&userName)
 	if err != nil {
 		fmt.Println("Query failed")
 	}
@@ -78,8 +87,42 @@ func GetTransaction(keyword string) (names []string) {
 	if err != nil {
 		fmt.Println("Query failed")
 	}
-	userFromName := GetUserName(userFromID)
-	userToName := GetUserName(userToID)
+	userFromName := GetUserNameByID(userFromID)
+	userToName := GetUserNameByID(userToID)
 	names = []string{userFromName, userToName}
+	return
+}
+
+func AddFriend(friendCode int, senderName string) (friendName string) {
+	conn := GetConn()
+	var friendID int
+	err := conn.QueryRow("SELECT id FROM user WHERE friendCode=%s", (friendCode)).Scan(&friendID)
+	if err != nil {
+		fmt.Println("Query failed")
+	}
+	senderID := GetUserID(senderName)
+	err2 := conn.QueryRow("INSERT INTO friends VALUES (%s,%s)", senderID, friendID)
+	if err2 != nil {
+		fmt.Println("Query failed")
+	}
+	friendName = GetUserNameByID(friendID)
+	return
+}
+
+func AreMutualFriends(userName1, userName2 string) (areMutuals bool) {
+	conn := GetConn()
+	user1Id := GetUserID(userName1)
+	user2Id := GetUserID(userName2)
+	err1 := conn.QueryRow("SELECT id FROM friends WHERE user_from=%s, user_to=%s", user1Id, user2Id).Scan(&areMutuals)
+	if err1 != nil {
+		areMutuals = false
+		return
+	}
+	err2 := conn.QueryRow("SELECT id FROM friends WHERE user_from=%s, user_to=%s", user2Id, user1Id).Scan(&areMutuals)
+	if err2 != nil {
+		areMutuals = false
+		return
+	}
+	areMutuals = true
 	return
 }

@@ -79,5 +79,3 @@ func main() {
 	}
 
 	fmt.Println(checkInputs(flags))
-
-}

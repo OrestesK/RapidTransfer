@@ -1,10 +1,11 @@
 package main
 
 import (
+	"Example/src/database"
 	"flag"
 	"fmt"
 	"log"
-	"strconv"
+	// "strconv"
 )
 
 // Creates the flags that are going to be used and assigns them values
@@ -53,6 +54,14 @@ type Flag struct {
 
 // Main method for runnning the system
 func main() {
+	database.InitializeDatabase()
+	database.HandleAccountStartup()
+	user := database.GetCurrentUser()
+	fmt.Printf("user: %v\n", user)
+	// if user.name != "" {
+	// 	fmt.Printf("Your code: %s\n", user.keyword)
+	// }
+
 	s, p, friend, r, d := initFlags()
 	flag.Parse()
 	flags := Flag{
@@ -64,18 +73,24 @@ func main() {
 	}
 
 	result := checkInputs(flags)
-	if result[0] == "f" {
+	if result[0] == "f" { // friend
+
 		// Add friend using result[1]
-	} else if result[0] == "r" {
-		index, _ := strconv.Atoi(result[1])
+	} else if result[0] == "r" { // retrieve
+
+		// index, _ := strconv.Atoi(result[1])
+
 		// Receive message using result[1]
-	} else if result[0] == "d" {
-		index, _ := strconv.Atoi(result[1])
+	} else if result[0] == "d" { // delete friend
+
+		// index, _ := strconv.Atoi(result[1])
 		// Delete friend using result[1]
-	} else if len(result) == 2 {
+
+	} else if len(result) == 2 { // send
 		// Send file
 	} else {
 		log.Fatal("No arguments given that match anything available")
 	}
 
 	fmt.Println(checkInputs(flags))
+}

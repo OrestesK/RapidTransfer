@@ -1,10 +1,17 @@
 package database
 
-// "context"
-// "os"
-
-// "github.com/jackc/pgx"
+import (
+	"github.com/jackc/pgx"
+)
 
 func getName() {
-	// conn, err := pgx.Connect(context.Background(), os.Getenv())
+	connConfig := pgx.ConnConfig{
+		Host:     "34.170.5.185",
+		Port:     5432,
+		Database: "rapidtransfer",
+		User:     "postgres",
+		Password: "postgres",
+	}
+	conn, err := pgx.Connect(connConfig)
+	// context.Background(), os.Getenv(dbAddress)
 }

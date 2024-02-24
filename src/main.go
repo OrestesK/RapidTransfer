@@ -25,7 +25,7 @@ func main() {
 	//
 	// Setting the TCP port as 0 makes libp2p choose an available port for us.
 	// You could, of course, specify one if you like.
-	host, err := libp2p.New(libp2p.ListenAddrStrings("/ip4/127.0.0.1/tcp/4040"))
+	host, err := libp2p.New()
 	if err != nil {
 		panic(err)
 	}

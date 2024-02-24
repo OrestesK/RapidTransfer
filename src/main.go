@@ -16,30 +16,24 @@ import (
 	"github.com/multiformats/go-multiaddr"
 )
 
-const protocolID = "example"
+const protocolID = "RapidTransfer"
 
 func main() {
-	// Add -peer-address flag
+	// parse given address (TODO this will be replaced with database)
 	peerAddr := flag.String("p", "", "peer address")
 	flag.Parse()
 
-	// Create the libp2p host.
-	//
-	// Note that we are explicitly passing the listen address and restricting it to IPv4 over the
-	// loopback interface (127.0.0.1).
-	//
-	// Setting the TCP port as 0 makes libp2p choose an available port for us.
-	// You could, of course, specify one if you like.
-	host, err := libp2p.New()
+	// Listen only on ( ipv4 and tcp )
+	host, err := libp2p.New(
+		libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/0"),
+		libp2p.Ping(false),
+	)
 	if err != nil {
 		panic(err)
 	}
 	defer host.Close()
 
-	// Print this node's addresses and ID
-	fmt.Println("Addresses:", host.Addrs())
-	fmt.Println("ID:", host.ID())
-
+	// Stream Handler
 	host.SetStreamHandler(protocolID, func(s network.Stream) {
 		go writeCounter(s)
 		go readCounter(s)
@@ -57,31 +51,36 @@ func main() {
 			panic(err)
 		}
 
-		// Connect to the node at the given address.
+		// Connect to given address
 		if err := host.Connect(context.Background(), *peerAddrInfo); err != nil {
 			panic(err)
 		}
 		fmt.Println("Connected to", peerAddrInfo.String())
 
-		// Open a stream with the given peer.
+		// Create a stream with peer
 		s, err := host.NewStream(context.Background(), peerAddrInfo.ID, protocolID)
 		if err != nil {
 			panic(err)
 		}
 
-		// Start the write and read threads.
-		go writeCounter(s)
-		go readCounter(s)
+		go writeCounter(s) // Start Write thread
+		go readCounter(s)  // Start Read thread
+	} else {
+		key := fmt.Sprintf("%s/p2p/%s", host.Addrs()[0], host.ID()) // Format key (it's the address + "/p2p/" + id)
+		fmt.Println(key)
 	}
 
-	sigCh := make(chan os.Signal)
-	signal.Notify(sigCh, syscall.SIGKILL, syscall.SIGINT)
-	<-sigCh
+	sigCh := make(chan os.Signal)                         // create channel
+	signal.Notify(sigCh, syscall.SIGKILL, syscall.SIGINT) // notify the channel when SIGKILL or SIGINT received
+	<-sigCh                                               // block until a signal is received
+	// basically wait here until I do Ctrl+C
 }
 
 func writeCounter(s network.Stream) {
+	// TODO write the file contents
 	var counter uint64
 
+	// infinite writing loop
 	for {
 		<-time.After(time.Second)
 		counter++
@@ -94,6 +93,9 @@ func writeCounter(s network.Stream) {
 }
 
 func readCounter(s network.Stream) {
+	// TODO read the file contents
+
+	// infinite reading loop
 	for {
 		var counter uint64
 

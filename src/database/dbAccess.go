@@ -174,7 +174,7 @@ func GetTransaction(keyword string) (names []string) {
 }
 
 // Adds a friend to a senders friends list based on their friend code
-func AddFriend(friendCode int, senderName string) (friendName string) {
+func AddFriend(friendCode string, senderName string) (friendName string) {
 	conn := GetConn()
 	var friendID int
 	err := conn.QueryRow("SELECT id FROM user WHERE friendCode=%s", (friendCode)).Scan(&friendID)
@@ -187,6 +187,18 @@ func AddFriend(friendCode int, senderName string) (friendName string) {
 		fmt.Println("Query failed")
 	}
 	friendName = GetUserNameByID(friendID)
+	return
+}
+
+// Deletes a one way friendship between two users
+func DeleteFriend(senderName, recieverName string) (deletedFriend string) {
+	conn := GetConn()
+	senderId := GetUserID(senderName)
+	recieverId := GetUserID(recieverName)
+	err := conn.QueryRow("DELETE FROM friends WHERE user_to=%s, user_from=%s", senderId, recieverId).Scan(&deletedFriend)
+	if err != nil {
+		fmt.Println("Query failed")
+	}
 	return
 }
 

@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"strconv"
 )
 
 // Creates the flags that are going to be used and assigns them values
@@ -50,32 +48,3 @@ type Flag struct {
 	recieve int
 	delete  int
 }
-
-// Main method for runnning the system
-func main() {
-	s, p, friend, r, d := initFlags()
-	flag.Parse()
-	flags := Flag{
-		send:    *s,
-		path:    *p,
-		friend:  *friend,
-		recieve: *r,
-		delete:  *d,
-	}
-
-	result := checkInputs(flags)
-	if result[0] == "f" {
-		// Add friend using result[1]
-	} else if result[0] == "r" {
-		index, _ := strconv.Atoi(result[1])
-		// Receive message using result[1]
-	} else if result[0] == "d" {
-		index, _ := strconv.Atoi(result[1])
-		// Delete friend using result[1]
-	} else if len(result) == 2 {
-		// Send file
-	} else {
-		log.Fatal("No arguments given that match anything available")
-	}
-
-	fmt.Println(checkInputs(flags))

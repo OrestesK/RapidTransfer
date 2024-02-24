@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx"
 )
 
-func getName() {
+func getConn() *pgx.Conn {
 	connConfig := pgx.ConnConfig{
 		Host:     "34.170.5.185",
 		Port:     5432,
@@ -15,19 +15,24 @@ func getName() {
 		User:     "postgres",
 		Password: "postgres",
 	}
+	conn, _ := pgx.Connect(connConfig)
+	return conn
+}
 
-	conn, err := pgx.Connect(connConfig)
+func initializeDatabase() {
 
+	var conn *pgx.Conn = getConn()
+
+	query, _ := readSQLFile("tansferDB.sql")
+
+	conn.Query(query)
+
+}
+
+func readSQLFile(filePath string) (string, error) {
+	data, err := os.ReadFile(filePath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		return "", fmt.Errorf("error reading SQL file: %w", err)
 	}
-	defer conn.Close()
-
-	row := conn.QueryRow("SELECT userID FROM user")
-	if err != nil {
-		fmt.Println("Query failed:", err)
-		return
-	}
-	fmt.Println(row)
+	return string(data), nil
 }

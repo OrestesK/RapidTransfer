@@ -47,7 +47,7 @@ func InitializeDatabase() {
 // 	conn.Exec("DROP TABLE transfer; DROP TABLE user; DROP TABLE friends;")
 // }
 
-func generateFriendCode() string {
+func GenerateFriendCode() string {
 	rand.Seed(time.Now().UnixNano())
 
 	// Define characters that can be part of the friend code
@@ -117,7 +117,7 @@ func getMacAddress() (string, error) {
 
 func CreateAccount(username string, macAddress string) {
 	conn := GetConn()
-	code := generateFriendCode()
+	code := GenerateFriendCode()
 	tag, err := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", username, code, macAddress)
 	fmt.Printf("tag.RowsAffected(): %v\n", tag.RowsAffected())
 	if err != nil {
@@ -183,12 +183,6 @@ func GetTransaction(keyword string) (names []string) {
 	return
 }
 
-// func CreateTransaction(user1 string, user2 string, keyword string) {
-// 	conn := GetConn()
-// 	conn.Exec("INSERT INTO transaction ")
-
-// }
-
 // Adds a friend to a senders friends list based on their friend code
 func AddFriend(friendCode int, senderName string) (friendName string) {
 	conn := GetConn()
@@ -231,8 +225,15 @@ func AreMutualFriends(userName1, userName2 string) (areMutuals bool) {
 	return
 }
 
-// Allows two users to send a file to eachother
-// func PerformTransaction(senderName, recieverName string) {
-// 	conn := GetConn()
-
-// }
+// Allows two users to send files to eachother
+func PerformTransaction(senderName, recieverName string) (keyword string) {
+	conn := GetConn()
+	keyword = GenerateFriendCode()
+	FromUserID := GetUserID(senderName)
+	ToUserID := GetUserID(recieverName)
+	err := conn.QueryRow("INSERT INTO transfer VALUES (%s,%s,%s)", FromUserID, ToUserID, keyword)
+	if err != nil {
+		fmt.Println("Query failed")
+	}
+	return
+}

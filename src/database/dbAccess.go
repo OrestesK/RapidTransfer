@@ -13,6 +13,15 @@ import (
 	"github.com/jackc/pgx"
 )
 
+var currentUser *User
+
+type User struct {
+	id      int
+	name    string
+	keyword string
+	macaddr string
+}
+
 func GetConn() *pgx.Conn {
 	connConfig := pgx.ConnConfig{
 		Host:     "34.170.5.185",
@@ -55,6 +64,13 @@ func generateFriendCode() string {
 	return result
 }
 
+func GetUserDetails() (int, string, string, string) {
+	if currentUser != nil {
+		return currentUser.id, currentUser.name, currentUser.keyword, currentUser.macaddr
+	}
+	return -1, "", "", ""
+}
+
 func HandleAccountStartup() {
 	conn := GetConn()
 	macAddr, _ := getMacAddress()
@@ -64,6 +80,8 @@ func HandleAccountStartup() {
 	var name, keyword string
 	var macaddr string
 	err := row.Scan(&id, &name, &keyword, &macaddr)
+
+	//
 	if err != nil {
 		if err == sql.ErrNoRows {
 			fmt.Print("Error no row found for mac address!")
@@ -84,10 +102,29 @@ func HandleAccountStartup() {
 
 		CreateAccount(name, macAddr)
 		fmt.Print("Creating account!\n\n")
+		currentUser = &User{
+			id:      1,
+			name:    name,
+			keyword: keyword,
+			macaddr: macaddr,
+		}
 
 	} else {
 		fmt.Printf("You already exist! Logging you in as %s!\n\n", name)
+		currentUser = &User{
+			id:      1,
+			name:    name,
+			keyword: keyword,
+			macaddr: macaddr,
+		}
 	}
+}
+
+func GetCurrentUser() User {
+	if currentUser != nil {
+		return *currentUser
+	}
+	return User{}
 }
 
 func getMacAddress() (string, error) {

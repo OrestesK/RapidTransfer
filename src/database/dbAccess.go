@@ -206,21 +206,33 @@ func AddFriend(friendCode int, senderName string) (friendName string) {
 	return
 }
 
-// Determines if two friends are mutual friends
-func AreMutualFriends(userName1, userName2 string) (areMutuals bool) {
+func IsFriend(userName1, userName2 string) (isFriend bool) {
+	isFriend = false
 	conn := GetConn()
 	user1Id := GetUserID(userName1)
 	user2Id := GetUserID(userName2)
-	err1 := conn.QueryRow("SELECT id FROM friends WHERE user_from=%s, user_to=%s", user1Id, user2Id).Scan(&areMutuals)
+	err1 := conn.QueryRow("SELECT id FROM friends WHERE user_from=%s, user_to=%s", user1Id, user2Id).Scan(&isFriend)
 	if err1 != nil {
-		areMutuals = false
+		isFriend = true
 		return
 	}
-	err2 := conn.QueryRow("SELECT id FROM friends WHERE user_from=%s, user_to=%s", user2Id, user1Id).Scan(&areMutuals)
-	if err2 != nil {
-		areMutuals = false
-		return
-	}
-	areMutuals = true
 	return
 }
+
+// Determines if two friends are mutual friends
+func AreMutualFriends(userName1, userName2 string) (areMutuals bool) {
+	areMutuals = false
+	friend1 := IsFriend(userName1, userName2)
+	friend2 := IsFriend(userName2, userName1)
+	if friend1 == friend2 {
+		areMutuals = true
+		return
+	}
+	return
+}
+
+// Allows two users to send a file to eachother
+// func PerformTransaction(senderName, recieverName string) {
+// 	conn := GetConn()
+
+// }

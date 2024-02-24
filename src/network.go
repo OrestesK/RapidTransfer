@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/binary"
+	"time"
+
 	// "encoding/binary"
 	// "flag"
 	"fmt"
@@ -87,34 +90,34 @@ func client(node host.Host, peerAddr string) {
 // 	// basically wait here until I do Ctrl+C
 // }
 
-// func writeCounter(s network.Stream) {
-// 	// TODO write the file contents
-// 	var counter uint64
+func writeCounter(s network.Stream) {
+	// TODO write the file contents
+	var counter uint64
 
-// 	// infinite writing loop
-// 	for {
-// 		<-time.After(time.Second)
-// 		counter++
+	// infinite writing loop
+	for {
+		<-time.After(time.Second)
+		counter++
 
-// 		err := binary.Write(s, binary.BigEndian, counter)
-// 		if err != nil {
-// 			panic(err)
-// 		}
-// 	}
-// }
+		err := binary.Write(s, binary.BigEndian, counter)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
 
-// func readCounter(s network.Stream) {
-// 	// TODO read the file contents
+func readCounter(s network.Stream) {
+	// TODO read the file contents
 
-// 	// infinite reading loop
-// 	for {
-// 		var counter uint64
+	// infinite reading loop
+	for {
+		var counter uint64
 
-// 		err := binary.Read(s, binary.BigEndian, &counter)
-// 		if err != nil {
-// 			panic(err)
-// 		}
+		err := binary.Read(s, binary.BigEndian, &counter)
+		if err != nil {
+			panic(err)
+		}
 
-// 		fmt.Printf("Received %d from %s\n", counter, s.ID())
-// 	}
-// }
+		fmt.Printf("Received %d from %s\n", counter, s.ID())
+	}
+}

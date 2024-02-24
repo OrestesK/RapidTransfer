@@ -1,113 +1,81 @@
 package main
 
 import (
-	"Example/src/database"
-	"context"
-	"encoding/binary"
 	"flag"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
-
-	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p/core/network"
-	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/multiformats/go-multiaddr"
+	"log"
+	"strconv"
 )
 
-const protocolID = "example"
+// Creates the flags that are going to be used and assigns them values
+func initFlags() (*string, *string, *string, *int, *int) {
+	s := flag.String("s", "", "Send to user")
+	p := flag.String("p", "", "Path to file")
+	friend := flag.String("friend", "", "Adding user to friends list")
+	r := flag.Int("r", -1, "Index of message receiving")
+	d := flag.Int("d", -1, "Index of message deleting")
+	return s, p, friend, r, d
+}
 
+// Checks the flags for data
+func checkInputs(flags Flag) [2]string {
+	var result [2]string
+	// Checks to see if the send flag was used
+	if len(flags.send) != 0 && len(flags.path) != 0 {
+		// Formats the send and file path arguments
+		result := [...]string{flags.send, flags.path}
+		return result
+	}
+	// Checks if the user is adding a friend
+	if len(flags.friend) != 0 {
+		return [...]string{"f", flags.friend}
+	}
+	// Checks to see if user is receiving a file from inbox
+	if flags.recieve != -1 {
+		return [...]string{"r", string(flags.recieve)}
+	}
+	// Checks to see if user is deleting a file from the inbox
+	if flags.delete != -1 {
+		return [...]string{"d", string(flags.delete)}
+	}
+	// If nothing is entered we exit the program
+	fmt.Println("Exited")
+	return result
+}
+
+type Flag struct {
+	send    string
+	path    string
+	friend  string
+	recieve int
+	delete  int
+}
+
+// Main method for runnning the system
 func main() {
-	// database.DropTables()
-	database.InitializeDatabase()
-
-	database.HandleAccountStartup()
-
-	// Add -peer-address flag
-	peerAddr := flag.String("p", "", "peer address")
+	s, p, friend, r, d := initFlags()
 	flag.Parse()
-
-	// Create the libp2p host.
-	//
-	// Note that we are explicitly passing the listen address and restricting it to IPv4 over the
-	// loopback interface (127.0.0.1).
-	//
-	// Setting the TCP port as 0 makes libp2p choose an available port for us.
-	// You could, of course, specify one if you like.
-	host, err := libp2p.New()
-	if err != nil {
-		panic(err)
-	}
-	defer host.Close()
-
-	// Print this node's addresses and ID
-	fmt.Println("Addresses:", host.Addrs())
-	fmt.Println("ID:", host.ID())
-
-	host.SetStreamHandler(protocolID, func(s network.Stream) {
-		go writeCounter(s)
-		go readCounter(s)
-	})
-
-	// if peer address was provided, connect to it
-	if *peerAddr != "" {
-		// Parse the multiaddr string.
-		peerMA, err := multiaddr.NewMultiaddr(*peerAddr)
-		if err != nil {
-			panic(err)
-		}
-		peerAddrInfo, err := peer.AddrInfoFromP2pAddr(peerMA)
-		if err != nil {
-			panic(err)
-		}
-
-		// Connect to the node at the given address.
-		if err := host.Connect(context.Background(), *peerAddrInfo); err != nil {
-			panic(err)
-		}
-		fmt.Println("Connected to", peerAddrInfo.String())
-
-		// Open a stream with the given peer.
-		s, err := host.NewStream(context.Background(), peerAddrInfo.ID, protocolID)
-		if err != nil {
-			panic(err)
-		}
-
-		// Start the write and read threads.
-		go writeCounter(s)
-		go readCounter(s)
+	flags := Flag{
+		send:    *s,
+		path:    *p,
+		friend:  *friend,
+		recieve: *r,
+		delete:  *d,
 	}
 
-	sigCh := make(chan os.Signal)
-	signal.Notify(sigCh, syscall.SIGKILL, syscall.SIGINT)
-	<-sigCh
-}
-
-func writeCounter(s network.Stream) {
-	var counter uint64
-
-	for {
-		<-time.After(time.Second)
-		counter++
-
-		err := binary.Write(s, binary.BigEndian, counter)
-		if err != nil {
-			panic(err)
-		}
+	result := checkInputs(flags)
+	if result[0] == "f" {
+		// Add friend using result[1]
+	} else if result[0] == "r" {
+		index, _ := strconv.Atoi(result[1])
+		// Receive message using result[1]
+	} else if result[0] == "d" {
+		index, _ := strconv.Atoi(result[1])
+		// Delete friend using result[1]
+	} else if len(result) == 2 {
+		// Send file
+	} else {
+		log.Fatal("No arguments given that match anything available")
 	}
-}
 
-func readCounter(s network.Stream) {
-	for {
-		var counter uint64
-
-		err := binary.Read(s, binary.BigEndian, &counter)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Received %d from %s\n", counter, s.ID())
-	}
-}
+	fmt.Println(checkInputs(flags))

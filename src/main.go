@@ -1,15 +1,15 @@
 package main
 
 import (
+	"Example/src/database"
 	"context"
-	"encoding/binary"
 	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
+	"encoding/binary"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -19,6 +19,9 @@ import (
 const protocolID = "example"
 
 func main() {
+	database.DropTables()
+	database.InitializeDatabase()
+
 	// Add -peer-address flag
 	peerAddr := flag.String("p", "", "peer address")
 	flag.Parse()

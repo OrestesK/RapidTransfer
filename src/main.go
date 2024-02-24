@@ -2,16 +2,21 @@ package main
 
 import (
 	"context"
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/libp2p/go-libp2p"
+	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
+
+const protocolID = "example"
 
 func main() {
 	// Add -peer-address flag
@@ -35,7 +40,12 @@ func main() {
 	fmt.Println("Addresses:", host.Addrs())
 	fmt.Println("ID:", host.ID())
 
-	// If we received a peer address, we should connect to it.
+	host.SetStreamHandler(protocolID, func(s network.Stream) {
+		go writeCounter(s)
+		go readCounter(s)
+	})
+
+	// if peer address was provided, connect to it
 	if *peerAddr != "" {
 		// Parse the multiaddr string.
 		peerMA, err := multiaddr.NewMultiaddr(*peerAddr)
@@ -52,9 +62,46 @@ func main() {
 			panic(err)
 		}
 		fmt.Println("Connected to", peerAddrInfo.String())
+
+		// Open a stream with the given peer.
+		s, err := host.NewStream(context.Background(), peerAddrInfo.ID, protocolID)
+		if err != nil {
+			panic(err)
+		}
+
+		// Start the write and read threads.
+		go writeCounter(s)
+		go readCounter(s)
 	}
 
 	sigCh := make(chan os.Signal)
 	signal.Notify(sigCh, syscall.SIGKILL, syscall.SIGINT)
 	<-sigCh
+}
+
+func writeCounter(s network.Stream) {
+	var counter uint64
+
+	for {
+		<-time.After(time.Second)
+		counter++
+
+		err := binary.Write(s, binary.BigEndian, counter)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func readCounter(s network.Stream) {
+	for {
+		var counter uint64
+
+		err := binary.Read(s, binary.BigEndian, &counter)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("Received %d from %s\n", counter, s.ID())
+	}
 }

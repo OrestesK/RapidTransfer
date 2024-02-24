@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"os"
+	// "os"
 
 	"github.com/jackc/pgx"
 )
@@ -15,26 +15,25 @@ func GetConn() *pgx.Conn {
 		User:     "postgres",
 		Password: "postgres",
 	}
-	conn, _ := pgx.Connect(connConfig)
+	conn, err := pgx.Connect(connConfig)
+	if err != nil {
+		fmt.Print("Failed to connect")
+	}
 	return conn
 }
 
 func InitializeDatabase() {
-
+	fmt.Print("Hello")
 	var conn *pgx.Conn = GetConn()
-
-	query, _ := ReadSQLFile("tansferDB.sql")
-
-	conn.Query(query)
+	conn.Exec("CREATE TABLE IF NOT EXISTS transfer (userFrom INT NOT NULL, userTo INT NOT NULL, keyword VARCHAR(100))")
+	conn.Exec("CREATE TABLE IF NOT EXISTS user (int SERIAL INT PRIMARY KEY, name VARCHAR(100) NOT NULL DEFAULT '', keyword VARCHAR(100))")
+	conn.Exec("CREATE TABLE IF NOT EXISTS friends (orig_user INT NOT NULL, friend_id INT NOT NULL, total_transfers INT NOT NULL DEFAULT 0)")
 
 }
 
-func ReadSQLFile(filePath string) (string, error) {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return "", fmt.Errorf("error reading SQL file: %w", err)
-	}
-	return string(data), nil
+func DropTables() {
+	var conn *pgx.Conn = GetConn()
+	conn.Exec("DROP TABLE transfer; DROP TABLE user; DROP TABLE friende;")
 }
 
 // Retrieves a user's freind code based on their name, which is passed in

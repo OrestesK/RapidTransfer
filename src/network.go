@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"encoding/binary"
-	"flag"
+	// "encoding/binary"
+	// "flag"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+	// "os"
+	// "os/signal"
+	// "syscall"
+	// "time"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -16,8 +16,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
-
-const protocolID = "RapidTransfer"
 
 func initialize_node() host.Host {
 	// Create p2p node
@@ -68,55 +66,55 @@ func client(node host.Host, peerAddr string) {
 	go readCounter(s)  // Start Read thread
 }
 
-func main() {
-	node := initialize_node() // treat this as the 'connection parameters'
-	defer node.Close()
+// func main() {
+// 	node := initialize_node() // treat this as the 'connection parameters'
+// 	defer node.Close()
 
-	// parse given address (TODO this will be replaced with database)
-	peerAddr := flag.String("p", "", "peer address")
-	flag.Parse()
+// 	// parse given address (TODO this will be replaced with database)
+// 	peerAddr := flag.String("p", "", "peer address")
+// 	flag.Parse()
 
-	if *peerAddr == "" {
-		server(node)
-	} else {
-		// if peer address was provided, connect to it
-		client(node, *peerAddr)
-	}
+// 	if *peerAddr == "" {
+// 		server(node)
+// 	} else {
+// 		// if peer address was provided, connect to it
+// 		client(node, *peerAddr)
+// 	}
 
-	sigCh := make(chan os.Signal)                         // create channel
-	signal.Notify(sigCh, syscall.SIGKILL, syscall.SIGINT) // notify the channel when SIGKILL or SIGINT received
-	<-sigCh                                               // block until a signal is received
-	// basically wait here until I do Ctrl+C
-}
+// 	sigCh := make(chan os.Signal)                         // create channel
+// 	signal.Notify(sigCh, syscall.SIGKILL, syscall.SIGINT) // notify the channel when SIGKILL or SIGINT received
+// 	<-sigCh                                               // block until a signal is received
+// 	// basically wait here until I do Ctrl+C
+// }
 
-func writeCounter(s network.Stream) {
-	// TODO write the file contents
-	var counter uint64
+// func writeCounter(s network.Stream) {
+// 	// TODO write the file contents
+// 	var counter uint64
 
-	// infinite writing loop
-	for {
-		<-time.After(time.Second)
-		counter++
+// 	// infinite writing loop
+// 	for {
+// 		<-time.After(time.Second)
+// 		counter++
 
-		err := binary.Write(s, binary.BigEndian, counter)
-		if err != nil {
-			panic(err)
-		}
-	}
-}
+// 		err := binary.Write(s, binary.BigEndian, counter)
+// 		if err != nil {
+// 			panic(err)
+// 		}
+// 	}
+// }
 
-func readCounter(s network.Stream) {
-	// TODO read the file contents
+// func readCounter(s network.Stream) {
+// 	// TODO read the file contents
 
-	// infinite reading loop
-	for {
-		var counter uint64
+// 	// infinite reading loop
+// 	for {
+// 		var counter uint64
 
-		err := binary.Read(s, binary.BigEndian, &counter)
-		if err != nil {
-			panic(err)
-		}
+// 		err := binary.Read(s, binary.BigEndian, &counter)
+// 		if err != nil {
+// 			panic(err)
+// 		}
 
-		fmt.Printf("Received %d from %s\n", counter, s.ID())
-	}
-}
+// 		fmt.Printf("Received %d from %s\n", counter, s.ID())
+// 	}
+// }

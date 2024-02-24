@@ -1,6 +1,9 @@
 package database
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/jackc/pgx"
 )
 
@@ -12,6 +15,19 @@ func getName() {
 		User:     "postgres",
 		Password: "postgres",
 	}
+
 	conn, err := pgx.Connect(connConfig)
-	// context.Background(), os.Getenv(dbAddress)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+	defer conn.Close()
+
+	row := conn.QueryRow("SELECT userID FROM user")
+	if err != nil {
+		fmt.Println("Query failed:", err)
+		return
+	}
+	fmt.Println(row)
 }

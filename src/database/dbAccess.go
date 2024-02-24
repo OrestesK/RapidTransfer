@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx"
 )
 
-func getConn() *pgx.Conn {
+func GetConn() *pgx.Conn {
 	connConfig := pgx.ConnConfig{
 		Host:     "34.170.5.185",
 		Port:     5432,
@@ -19,17 +19,17 @@ func getConn() *pgx.Conn {
 	return conn
 }
 
-func initializeDatabase() {
+func InitializeDatabase() {
 
-	var conn *pgx.Conn = getConn()
+	var conn *pgx.Conn = GetConn()
 
-	query, _ := readSQLFile("tansferDB.sql")
+	query, _ := ReadSQLFile("tansferDB.sql")
 
 	conn.Query(query)
 
 }
 
-func readSQLFile(filePath string) (string, error) {
+func ReadSQLFile(filePath string) (string, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		return "", fmt.Errorf("error reading SQL file: %w", err)
@@ -38,8 +38,8 @@ func readSQLFile(filePath string) (string, error) {
 }
 
 // Retrieves a user's freind code based on their name, which is passed in
-func getUserKey(name string) int {
-	conn := getConn()
+func GetUserKey(name string) int {
+	conn := GetConn()
 	var userKey int
 	err := conn.QueryRow("SELECT friendCode FROM user WHERE name=%s", (name)).Scan(&userKey)
 	if err != nil {
@@ -49,8 +49,8 @@ func getUserKey(name string) int {
 }
 
 // Retrieves a user's id based on their name, which is passed in
-func getUserID(name string) int {
-	conn := getConn()
+func GetUserID(name string) int {
+	conn := GetConn()
 	var userID int
 	err := conn.QueryRow("SELECT id FROM user WHERE name=%s", (name)).Scan(&userID)
 	if err != nil {

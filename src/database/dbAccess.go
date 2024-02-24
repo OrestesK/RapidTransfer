@@ -93,6 +93,7 @@ func GetTransaction(keyword string) (names []string) {
 	return
 }
 
+// Adds a friend to a senders friends list based on their friend code
 func AddFriend(friendCode int, senderName string) (friendName string) {
 	conn := GetConn()
 	var friendID int
@@ -109,6 +110,7 @@ func AddFriend(friendCode int, senderName string) (friendName string) {
 	return
 }
 
+// Determines if two friends are mutual friends
 func AreMutualFriends(userName1, userName2 string) (areMutuals bool) {
 	conn := GetConn()
 	user1Id := GetUserID(userName1)

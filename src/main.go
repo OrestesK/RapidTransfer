@@ -19,28 +19,31 @@ import (
 const protocolID = "RapidTransfer"
 
 func main() {
-	// parse given address (TODO this will be replaced with database)
-	peerAddr := flag.String("p", "", "peer address")
-	flag.Parse()
-
+	// Create p2p node
 	// Listen only on ( ipv4 and tcp )
-	host, err := libp2p.New(
+	node, err := libp2p.New(
 		libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/0"),
 		libp2p.Ping(false),
 	)
 	if err != nil {
 		panic(err)
 	}
-	defer host.Close()
+	defer node.Close()
 
-	// Stream Handler
-	host.SetStreamHandler(protocolID, func(s network.Stream) {
-		go writeCounter(s)
-		go readCounter(s)
-	})
+	// parse given address (TODO this will be replaced with database)
+	peerAddr := flag.String("p", "", "peer address")
+	flag.Parse()
 
-	// if peer address was provided, connect to it
-	if *peerAddr != "" {
+	if *peerAddr == "" {
+		node.SetStreamHandler(protocolID, func(s network.Stream) {
+			go writeCounter(s)
+			go readCounter(s)
+		})
+		key := fmt.Sprintf("%s/p2p/%s", node.Addrs()[0], node.ID()) // Format key (it's the address + "/p2p/" + id)
+		fmt.Println(key)
+
+		// if peer address was provided, connect to it
+	} else {
 		// Parse the multiaddr string.
 		peerMA, err := multiaddr.NewMultiaddr(*peerAddr)
 		if err != nil {
@@ -52,22 +55,19 @@ func main() {
 		}
 
 		// Connect to given address
-		if err := host.Connect(context.Background(), *peerAddrInfo); err != nil {
+		if err := node.Connect(context.Background(), *peerAddrInfo); err != nil {
 			panic(err)
 		}
 		fmt.Println("Connected to", peerAddrInfo.String())
 
 		// Create a stream with peer
-		s, err := host.NewStream(context.Background(), peerAddrInfo.ID, protocolID)
+		s, err := node.NewStream(context.Background(), peerAddrInfo.ID, protocolID)
 		if err != nil {
 			panic(err)
 		}
 
 		go writeCounter(s) // Start Write thread
 		go readCounter(s)  // Start Read thread
-	} else {
-		key := fmt.Sprintf("%s/p2p/%s", host.Addrs()[0], host.ID()) // Format key (it's the address + "/p2p/" + id)
-		fmt.Println(key)
 	}
 
 	sigCh := make(chan os.Signal)                         // create channel

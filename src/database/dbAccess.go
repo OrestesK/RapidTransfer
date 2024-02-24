@@ -228,12 +228,14 @@ func AreMutualFriends(userName1, userName2 string) (areMutuals bool) {
 // Allows two users to send files to eachother
 func PerformTransaction(senderName, recieverName string) (keyword string) {
 	conn := GetConn()
-	keyword = GenerateFriendCode()
 	FromUserID := GetUserID(senderName)
 	ToUserID := GetUserID(recieverName)
-	err := conn.QueryRow("INSERT INTO transfer VALUES (%s,%s,%s)", FromUserID, ToUserID, keyword)
-	if err != nil {
-		fmt.Println("Query failed")
+	if AreMutualFriends(senderName, recieverName) {
+		keyword = GenerateFriendCode()
+		err := conn.QueryRow("INSERT INTO transfer VALUES (%s,%s,%s)", FromUserID, ToUserID, keyword)
+		if err != nil {
+			fmt.Println("Query failed")
+		}
 	}
 	return
 }

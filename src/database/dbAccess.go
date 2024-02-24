@@ -71,7 +71,7 @@ func GetUserName(id int) (userName string) {
 Retrieves the names of two users who have had a transaction with eachother. This
 function does this by reading the specific keyword associated with the transaction
 */
-func GetTransfer(keyword string) (names []string) {
+func GetTransaction(keyword string) (names []string) {
 	conn := GetConn()
 	var userFromID int
 	var userToID int

@@ -1,15 +1,13 @@
 package main
 
 import (
+	"Example/src/database"
 	"context"
 	"encoding/binary"
 	"flag"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
-
-	"encoding/binary"
 	"time"
 
 	// "encoding/binary"
@@ -77,6 +75,10 @@ func client(node host.Host, peerAddr string) {
 }
 
 func main() {
+	database.InitializeDatabase()
+	database.HandleAccountStartup()
+	user := database.GetCurrentUser()
+	fmt.Printf("user: %v\n", user)
 	node := initialize_node() // treat this as the 'connection parameters'
 	defer node.Close()
 

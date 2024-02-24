@@ -37,23 +37,49 @@ func DropTables() {
 }
 
 // Retrieves a user's freind code based on their name, which is passed in
-func GetUserKey(name string) int {
+func GetUserFriendCode(name string) (userKey int) {
 	conn := GetConn()
-	var userKey int
 	err := conn.QueryRow("SELECT friendCode FROM user WHERE name=%s", (name)).Scan(&userKey)
 	if err != nil {
 		fmt.Println("Query failed")
 	}
-	return userKey
+	return
 }
 
 // Retrieves a user's id based on their name, which is passed in
-func GetUserID(name string) int {
+func GetUserID(name string) (userID int) {
 	conn := GetConn()
-	var userID int
 	err := conn.QueryRow("SELECT id FROM user WHERE name=%s", (name)).Scan(&userID)
 	if err != nil {
 		fmt.Println("Query failed")
 	}
-	return userID
+	return
+}
+
+// Retrieves a user's name based on their friend code, which is passed in
+func GetUserName(id int) (userName string) {
+	conn := GetConn()
+	err := conn.QueryRow("SELECT name FROM user WHERE id=%s", (id)).Scan(&userName)
+	if err != nil {
+		fmt.Println("Query failed")
+	}
+	return
+}
+
+/*
+Retrieves the names of two users who have had a transaction with eachother. This
+function does this by reading the specific keyword associated with the transaction
+*/
+func GetTransfer(keyword string) (names []string) {
+	conn := GetConn()
+	var userFromID int
+	var userToID int
+	err := conn.QueryRow("SELECT uidFrom, uidTo FROM transaction WHERE keyword=%s", (keyword)).Scan(&userFromID, &userToID)
+	if err != nil {
+		fmt.Println("Query failed")
+	}
+	userFromName := GetUserName(userFromID)
+	userToName := GetUserName(userToID)
+	names = []string{userFromName, userToName}
+	return
 }

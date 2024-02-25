@@ -13,7 +13,7 @@ func InitFlags() (*string, *string, *string, *string, *int, *string, *string) {
 	r := flag.String("r", "", "code of message receiving")
 	d := flag.Int("d", -1, "Index of message deleting")
 	pn := flag.String("pn", "", "Pending file transfers")
-	fl := flag.String("fList", "", "Retrieve friend list")
+	fl := flag.String("fl", "", "Retrieve friend list")
 	return s, p, f, r, d, pn, fl
 }
 

@@ -5,7 +5,6 @@ import (
 	"Example/src/network"
 	"flag"
 	"fmt"
-	"log"
 )
 
 // Main method for runnning the system
@@ -29,7 +28,8 @@ func main() {
 
 	result := CheckInputs(flags)
 	fmt.Println(result[0], result[1])
-	if result[0] == "f" { // friend
+	switch argument := result[0]; argument {
+	case "f":
 		code := result[1]
 		fmt.Println(code)
 		friendsCode := database.GetUserFriendCode(code)
@@ -40,30 +40,23 @@ func main() {
 			fmt.Print("Use has been added!")
 		}
 
-	} else if result[0] == "pn" {
+	case "pn":
 		database.GetPendingTransfers()
 		friends := database.GetFriendsList(curUserName)
 		fmt.Printf("friends: %v\n", friends)
-	} else if result[0] == "r" { // retrieve
 
-		// Receive message using result[1]
+	case "r":
 		network.Receive_file(result[1])
-	} else if result[0] == "d" { // delete friend
 
-		// index, _ := strconv.Atoi(result[1])
-		// Delete friend using result[1]
+	case "d":
 
-	} else if result[0] == "fl" {
+	case "fl":
 		friendList := database.GetFriendsList(curUserName)
 		for namez := range friendList {
 			fmt.Println("Friend name: ", namez)
 		}
-	} else if len(result) == 2 { // send
-		// start daemon
+	default:
 		network.Send_file(result[0], result[1])
-	} else {
-		log.Fatal("No arguments given that match anything available")
 	}
 
-	// fmt.Println(CheckInputs(flags))
 }

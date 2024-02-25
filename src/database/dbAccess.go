@@ -366,17 +366,19 @@ func GetFriendsList(username string) (friendsList []string) {
 	conn := GetConn()
 	userId := GetUserID(username)
 
-	var friendId int
-	rows, err := conn.Query("SELECT friend_id FROM friends WHERE orig_user=$1", userId)
+	rows, err := conn.Query(`
+	
+	SELECT ARRAY_AGG(users.name)
+	FROM users 
+	
+	INNER JOIN friends ON friends.friend_id=users.id
+	WHERE orig_user=$1 
+	
+	GROUP BY friends.orig_user`, userId)
 	if err != nil {
 		panic(err)
 	}
-	for rows.Next() {
-		rows.Scan(&friendId)
-		friendUser := GetUserNameByID(friendId)
-		println(friendUser)
-		friendsList = append(friendsList, friendUser)
-	}
-	
-	return
+	defer rows.Close() // Close the rows at the end of the function
+
+	return friendsList
 }

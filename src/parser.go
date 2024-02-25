@@ -6,14 +6,15 @@ import (
 )
 
 // Creates the flags that are going to be used and assigns them values
-func InitFlags() (*string, *string, *string, *string, *int, *string) {
+func InitFlags() (*string, *string, *string, *string, *int, *string, *string) {
 	s := flag.String("s", "", "Send to user")
 	p := flag.String("p", "", "Path to file")
 	friend := flag.String("friend", "", "Adding user to friends list")
 	r := flag.String("r", "", "code of message receiving")
 	d := flag.Int("d", -1, "Index of message deleting")
 	pend := flag.String("pend", "all", "Pending file transfers")
-	return s, p, friend, r, d, pend
+	fList := flag.String("fList", "", "Retrieve friend list")
+	return s, p, friend, r, d, pend, fList
 }
 
 // Checks the flags for data
@@ -42,6 +43,10 @@ func CheckInputs(flags Flag) [2]string {
 		return [...]string{"pend", "all"}
 
 	}
+
+	if flags.fList == "all" {
+		return [...]string{"fList", flags.fList}
+	}
 	// If nothing is entered we exit the program
 	fmt.Println("Exited")
 	return result
@@ -54,4 +59,5 @@ type Flag struct {
 	recieve string
 	delete  int
 	pend    string
+	fList   string
 }

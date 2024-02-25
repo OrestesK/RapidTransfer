@@ -57,6 +57,7 @@ func main() {
 	// Retrieves the users friend list, usage -fl all
 	case "fl":
 		friendList := database.GetFriendsList(curUserName)
+		fmt.Println("This is a debugging statement")
 		for _, namez := range friendList {
 			fmt.Println("Friend name: ", namez)
 		}

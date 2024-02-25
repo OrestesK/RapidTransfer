@@ -2,8 +2,8 @@ package network
 
 import (
 	"Example/src/database"
-	"fmt"
-	"os"
+	// "fmt"
+	// "os"
 	"os/exec"
 )
 
@@ -14,8 +14,8 @@ func Send_file(user_to string, filename string) {
 	cmd.Start()
 
 	// saved pid to file
-	tt := fmt.Sprintf("%d\n", cmd.Process.Pid)
-	os.WriteFile("pid", []byte(tt), 0755)
+	// tt := fmt.Sprintf("%d\n", cmd.Process.Pid)
+	// os.WriteFile("pid", []byte(tt), 0755)
 }
 
 func Receive_file(transaction_identifier string) {

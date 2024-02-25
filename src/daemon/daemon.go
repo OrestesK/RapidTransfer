@@ -22,8 +22,8 @@ func main() {
 	database.HandleAccountStartup()
 	_, user_from, _, _ := database.GetUserDetails()
 
-	thing := database.PerformTransaction(user_from, user_to, address, file_name)
-	println(thing)
+	database.PerformTransaction(user_from, user_to, address, file_name)
+	// println(thing)
 
 	// wait :)
 	<-done

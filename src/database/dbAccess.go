@@ -377,6 +377,6 @@ func GetFriendsList(username string) (friendsList []string) {
 		println(friendUser)
 		friendsList = append(friendsList, friendUser)
 	}
-	
+
 	return
 }

@@ -270,7 +270,7 @@ func AddFriend(friendCode string, senderName string) (success bool) {
 // Deletes a one way friendship between two users
 func DeleteFriend(senderName string, recieverName string) {
 	conn := GetConn()
-	_, err := conn.Exec("DELETE FROM friends WHERE friend_id=$1 AND orig_user=$2", GetUserID(senderName), GetUserID(recieverName))
+	_, err := conn.Exec("DELETE FROM friends WHERE orig_user=$1 AND friend_id=$2", GetUserID(senderName), GetUserID(recieverName))
 	if err != nil {
 		fmt.Println("Query failed", err)
 

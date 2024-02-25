@@ -41,7 +41,7 @@ func Server(node host.Host, file_name string, done chan bool) string {
 	return key
 }
 
-func Client(node host.Host, peerAddr string, done chan bool) {
+func Client(node host.Host, peerAddr string, file_name string, done chan bool) {
 	// Parse the multiaddr string.
 	peerMA, err := multiaddr.NewMultiaddr(peerAddr)
 	if err != nil {
@@ -65,7 +65,7 @@ func Client(node host.Host, peerAddr string, done chan bool) {
 	}
 
 	//TODO THIS GETS HERE
-	go read(s, done) // Start Read thread
+	go read(s, file_name, done) // Start Read thread
 }
 
 func write(s network.Stream, file_name string, done chan bool) {
@@ -96,7 +96,7 @@ func write(s network.Stream, file_name string, done chan bool) {
 	done <- true
 }
 
-func read(s network.Stream, done chan bool) {
+func read(s network.Stream, file_name string, done chan bool) {
 	var dataLength int64
 	err := binary.Read(s, binary.BigEndian, &dataLength)
 	if err != nil {
@@ -113,12 +113,12 @@ func read(s network.Stream, done chan bool) {
 		return
 	}
 
-	err = os.WriteFile("file.txt", byteArray, fs.FileMode(0755))
+	err = os.WriteFile(file_name, byteArray, fs.FileMode(0755))
 	if err != nil {
 		// Handle access denied by creating a new file with a modified name
 		count := 1
 		for {
-			newFileName := fmt.Sprintf("file_%d.txt", count)
+			newFileName := fmt.Sprintf("%d%s", file_name, count)
 			err = os.WriteFile(newFileName, byteArray, fs.FileMode(0755))
 			if err == nil {
 				fmt.Printf("File saved as %s\n", newFileName)

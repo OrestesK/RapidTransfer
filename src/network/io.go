@@ -5,19 +5,13 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"syscall"
 )
 
 func Send_file(user_to string, filename string) {
 	// execute daemon, runs in background independent of this
 	cmd := exec.Command("go", "run", "src/daemon/daemon.go", user_to, filename)
 
-	// dont worry about this
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-	}
 	cmd.Start()
-	syscall.Setpgid(cmd.Process.Pid, cmd.Process.Pid)
 
 	// saved pid to file
 	tt := fmt.Sprintf("%d\n", cmd.Process.Pid)
@@ -29,9 +23,10 @@ func Receive_file(transaction_identifier string) {
 
 	// get big key from small key
 	address := database.GetAddressFromTransactionPhrase(transaction_identifier)
+	file_name := database.GetFileNameFromTransactionPhrase(transaction_identifier)
 
 	done := make(chan bool)
 	// client
-	Client(node, address, done)
+	Client(node, address, file_name, done)
 	<-done
 }

@@ -195,7 +195,7 @@ func CreateAccount(username string, macAddress string) {
 // Retrieves a user's freind code based on their name, which is passed in
 func GetUserFriendCode(name string) (userKey string) {
 	conn := GetConn()
-	err := conn.QueryRow("SELECT friendCode FROM users WHERE name=$1", (name)).Scan(&userKey)
+	err := conn.QueryRow("SELECT keyword FROM users WHERE name=$1", name).Scan(&userKey)
 	if err != nil {
 		fmt.Print("Failed at GetUserFriendCode")
 	}
@@ -258,7 +258,7 @@ func AddFriend(friendCode string, senderName string) (success bool) {
 	conn := GetConn()
 	var friendID int
 	fmt.Printf("friendcode: %s\n", friendCode)
-	err := conn.QueryRow("SELECT id FROM users WHERE keyword=$1;", (friendCode)).Scan(&friendID)
+	err := conn.QueryRow("SELECT id FROM users WHERE keyword=$1;", friendCode).Scan(&friendID)
 	fmt.Printf("FriendID From Code: %d\n", friendID)
 	if err != nil {
 		fmt.Print("Failed at AddFriend")

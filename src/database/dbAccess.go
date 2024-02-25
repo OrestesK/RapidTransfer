@@ -182,6 +182,7 @@ func GetUserID(name string) (userID int) {
 	err := conn.QueryRow("SELECT id FROM users WHERE name=$1", (name)).Scan(&userID)
 	if err != nil {
 		fmt.Print("Failed at GetUserID")
+		panic(err)
 	}
 	return
 }

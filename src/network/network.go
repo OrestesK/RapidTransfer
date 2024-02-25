@@ -28,10 +28,9 @@ func Initialize_node() host.Host {
 	return node
 }
 
-func Server(node host.Host) string {
+func Server(node host.Host, done chan bool) string {
 	node.SetStreamHandler(protocolID, func(s network.Stream) {
-		go writeCounter(s)
-		go readCounter(s)
+		go writeCounter(s, done)
 	})
 
 	key := fmt.Sprintf("%s/p2p/%s", node.Addrs()[1], node.ID())
@@ -61,24 +60,22 @@ func Client(node host.Host, peerAddr string) {
 		panic(err)
 	}
 
-	go writeCounter(s) // Start Write thread
-	go readCounter(s)  // Start Read thread
+	go writeCounter(s, nil) // Start Write thread TODO FIX THIS
+	go readCounter(s)       // Start Read thread
 }
 
-func writeCounter(s network.Stream) {
+func writeCounter(s network.Stream, done chan bool) {
 	// TODO write the file contents
 	var counter uint64
 
-	// infinite writing loop
-	for {
-		<-time.After(time.Second)
-		counter++
+	<-time.After(time.Second)
+	counter++
 
-		err := binary.Write(s, binary.BigEndian, counter)
-		if err != nil {
-			panic(err)
-		}
+	err := binary.Write(s, binary.BigEndian, counter)
+	if err != nil {
+		panic(err)
 	}
+	done <- true
 }
 
 func readCounter(s network.Stream) {

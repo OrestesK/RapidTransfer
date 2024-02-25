@@ -4,7 +4,6 @@ import (
 	"Example/src/database"
 	"Example/src/network"
 	"os"
-	"strconv"
 )
 
 // this is the daemon
@@ -15,13 +14,17 @@ func main() {
 
 	node := network.Initialize_node()
 
+	done := make(chan bool)
 	// I will computer and provide key
-	key := network.Server(node)
+	key := network.Server(node, done)
 
 	// initialize user
 	database.HandleAccountStartup()
-	user_from, _, _, _ := database.GetUserDetails()
+	_, user_from, _, _ := database.GetUserDetails()
 
-	database.PerformTransaction(strconv.Itoa(user_from), user_to, key, file_name)
+	database.PerformTransaction(user_from, user_to, key, file_name)
+
+	// wait :)
+	<-done
 
 }

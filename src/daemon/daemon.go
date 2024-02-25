@@ -31,6 +31,5 @@ func main() {
 	<-done
 
 	// delete transaction
-	database.DeleteTransaction(address)
-
+	database.DeleteTransactionWithAddress(address)
 }

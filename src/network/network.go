@@ -61,7 +61,6 @@ func Client(node host.Host, peerAddr string) {
 	}
 
 	go writeCounter(s, nil) // Start Write thread TODO FIX THIS
-	go readCounter(s)       // Start Read thread
 }
 
 func writeCounter(s network.Stream, done chan bool) {

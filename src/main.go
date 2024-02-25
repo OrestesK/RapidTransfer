@@ -2,29 +2,11 @@ package main
 
 import (
 	"Example/src/database"
+	"Example/src/network"
 	"flag"
 	"fmt"
 	"log"
-	"os"
-	"os/exec"
-	"syscall"
 )
-
-func execute_daemon(user_to string, filename string) {
-	// execute daemon, runs in background independent of this
-	cmd := exec.Command("go", "run", "src/daemon.go", user_to, filename)
-
-	// dont worry about this
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-	}
-	cmd.Start()
-	syscall.Setpgid(cmd.Process.Pid, cmd.Process.Pid)
-
-	// saved pid to file
-	tt := fmt.Sprintf("%d\n", cmd.Process.Pid)
-	os.WriteFile("pid", []byte(tt), 0755)
-}
 
 // Main method for runnning the system
 func main() {
@@ -58,18 +40,17 @@ func main() {
 
 	} else if result[0] == "r" { // retrieve
 
-		// index, _ := strconv.Atoi(result[1])
-
 		// Receive message using result[1]
+		transaction_identifier := "abcd 123"
+		network.Receive_file(transaction_identifier)
 	} else if result[0] == "d" { // delete friend
 
 		// index, _ := strconv.Atoi(result[1])
 		// Delete friend using result[1]
 
 	} else if len(result) == 2 { // send
-		// Send file
-		// HERE WE WILL START DAEMON
-		execute_daemon(result[0], result[1])
+		// start daemon
+		network.Send_file(result[0], result[1])
 	} else {
 		log.Fatal("No arguments given that match anything available")
 	}

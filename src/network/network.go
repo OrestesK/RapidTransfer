@@ -68,7 +68,8 @@ func writeCounter(s network.Stream, done chan bool) {
 
 	err := binary.Write(s, binary.BigEndian, 5)
 	if err != nil {
-		panic(err)
+		done <- true
+		return
 	}
 
 	done <- true
@@ -81,7 +82,8 @@ func readCounter(s network.Stream, done chan bool) {
 
 	err := binary.Read(s, binary.BigEndian, &counter)
 	if err != nil {
-		panic(err)
+		done <- true
+		return
 	}
 
 	fmt.Printf("Received %d from %s\n", counter, s.ID())

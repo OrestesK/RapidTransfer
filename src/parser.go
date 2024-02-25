@@ -15,7 +15,6 @@ func InitFlags() (*string, *string, *string, *int, *int) {
 	return s, p, friend, r, d
 }
 
-
 // Checks the flags for data
 func CheckInputs(flags Flag) [2]string {
 	var result [2]string

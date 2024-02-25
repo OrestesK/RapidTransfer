@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"time"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
-	"os"
 )
 
 const protocolID = "RapidTransfer" // this is just a unique id, can be whatever, keeps the heckers away
@@ -38,7 +36,7 @@ func Server(node host.Host, done chan bool) string {
 	return key
 }
 
-func Client(node host.Host, peerAddr string) {
+func Client(node host.Host, peerAddr string, done chan bool) {
 	// Parse the multiaddr string.
 	peerMA, err := multiaddr.NewMultiaddr(peerAddr)
 	if err != nil {
@@ -61,27 +59,22 @@ func Client(node host.Host, peerAddr string) {
 		panic(err)
 	}
 
-	go readCounter(s) // Start Read thread
+	//TODO THIS GETS HERE
+	go readCounter(s, done) // Start Read thread
 }
 
 func writeCounter(s network.Stream, done chan bool) {
-	os.WriteFile("to", []byte("good"), 0755)
 	// TODO write the file contents
-	var counter uint64
 
-	<-time.After(time.Second)
-	counter++
-
-	err := binary.Write(s, binary.BigEndian, counter)
+	err := binary.Write(s, binary.BigEndian, 5)
 	if err != nil {
-		os.WriteFile("to", []byte("bad"), 0755)
 		panic(err)
 	}
 
 	done <- true
 }
 
-func readCounter(s network.Stream) {
+func readCounter(s network.Stream, done chan bool) {
 	// TODO read the file contents
 
 	var counter uint64
@@ -92,4 +85,5 @@ func readCounter(s network.Stream) {
 	}
 
 	fmt.Printf("Received %d from %s\n", counter, s.ID())
+	done <- true
 }

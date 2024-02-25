@@ -25,12 +25,9 @@ func main() {
 	thing := database.PerformTransaction(user_from, user_to, address, file_name)
 	println(thing)
 
-	println("here")
 	// wait :)
 	<-done
 
-	println("here")
 	// delete transaction
-	// database.DeleteTransactionWithAddress(address)
-	println("here")
+	database.DeleteTransactionWithAddress(address)
 }

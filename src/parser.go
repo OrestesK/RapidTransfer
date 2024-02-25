@@ -13,9 +13,9 @@ func InitFlags() (*string, *string, *string, *string, *string, *string, *string,
 	r := flag.String("r", "", "code of message receiving")
 	d := flag.String("d", "", "Index of message deleting")
 	df := flag.String("df", "", "Removes friend when given name")
-	pn := flag.String("pn", "", "Pending file transfers")
-	fl := flag.String("fl", "", "Retrieve friend list")
-	c := flag.String("c", "", "Retrieve personal friend code")
+	pn := flag.String("pn", "all", "Pending file transfers")
+	fl := flag.String("fl", "all", "Retrieve friend list")
+	c := flag.String("c", "self", "Retrieve personal friend code")
 
 	return s, p, f, r, d, pn, fl, c, df
 }

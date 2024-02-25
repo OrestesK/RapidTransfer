@@ -44,7 +44,6 @@ func main() {
 		} else {
 			fmt.Println("User has been added!")
 		}
-
 	// Retrieves all of the pending transfers, Usage -pn all
 	case "pn": // Works
 		database.GetPendingTransfers(curUserName)
@@ -62,10 +61,10 @@ func main() {
 	// Retrieves the users friend list, usage -fl all
 	case "fl": // works
 		friendList := database.GetFriendsList(curUserName)
+		fmt.Println("This is a debugging statement")
 		for _, namez := range friendList {
 			fmt.Println("Friend name: ", namez)
 		}
-
 	// Retrieves the users friend code, Usage -c self
 	case "c": // works
 		fmt.Println(database.GetUserFriendCode(curUserName))

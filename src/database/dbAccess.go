@@ -211,7 +211,7 @@ func GetUserNameByID(id int) (userName string) {
 }
 
 // Retrieves a user's name based on their friend code, which is passed in
-func GetUserNameByFriendCode(friendCode int) (userName string) {
+func GetUserNameByFriendCode(friendCode string) (userName string) {
 	conn := GetConn()
 	err := conn.QueryRow("SELECT name FROM user WHERE id=$1", friendCode).Scan(&userName)
 	if err != nil {

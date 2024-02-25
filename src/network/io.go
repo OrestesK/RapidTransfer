@@ -23,10 +23,17 @@ func Send_file(user_to string, filename string) {
 func Receive_file(transaction_identifier string) {
 	node := Initialize_node()
 
+	id, _, _, _ := database.GetUserDetails()
+	result := database.UserCanViewTransaction(id, transaction_identifier)
+	if !result {
+		// Cannot view this transaction.
+		fmt.Print("You cannot download this file.")
+		return
+	}
+
 	// get big key from small key
 	address := database.GetAddressFromTransactionPhrase(transaction_identifier)
 	file_name := database.GetFileNameFromTransactionPhrase(transaction_identifier)
-
 	done := make(chan bool)
 	// client
 	if len(file_name) == 0 {

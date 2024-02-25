@@ -316,6 +316,20 @@ func GetFileNameFromTransactionPhrase(phrase string) string {
 	return filename
 }
 
+func UserCanViewTransaction(userId int, phrase string) bool {
+	conn := GetConn()
+	row := conn.QueryRow("SELECT COUNT(*) FROM transfer WHERE userfrom = $1 OR userto = $2 AND keyword = $3;", userId, userId, phrase)
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			fmt.Println("No results found")
+			return false
+		}
+	}
+	return count > 0
+}
+
 func DeleteTransactionWithAddress(address string) {
 	conn := GetConn()
 	_, err := conn.Exec("DELETE FROM transfer WHERE address = $1;", address)

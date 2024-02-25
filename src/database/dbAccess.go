@@ -73,8 +73,6 @@ func GetUserDetails() (int, string, string, string) {
 
 func GetPendingTransfers() {
 	conn := GetConn()
-	x := GetCurrentUser().id
-	println(x)
 	rows, _ := conn.Query("SELECT users.name as host, transfer.keyword, filename FROM transfer INNER JOIN users ON users.id = transfer.userFrom WHERE userTo = $1", 3)
 	for rows.Next() {
 
@@ -188,7 +186,7 @@ func CreateAccount(username string, macAddress string) {
 	code := generateFriendCode()
 	_, err := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", username, code, macAddress)
 	if err != nil {
-		fmt.Print("Failed at CreateAccount: %s", err)
+		fmt.Printf("Failed at CreateAccount: %s", err)
 	}
 }
 

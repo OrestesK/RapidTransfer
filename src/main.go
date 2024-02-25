@@ -14,7 +14,7 @@ func main() {
 
 	_, curUserName, _, _ := database.GetUserDetails()
 
-	s, p, f, r, d, pn, fl := InitFlags()
+	s, p, f, r, d, pn, fl, c := InitFlags()
 	flag.Parse()
 	flags := Flag{
 		send:    *s,
@@ -24,6 +24,7 @@ func main() {
 		delete:  *d,
 		fList:   *fl,
 		pend:    *pn,
+		code:    *c,
 	}
 
 	result := CheckInputs(flags)
@@ -34,7 +35,7 @@ func main() {
 		fmt.Println(code)
 		friendsCode := database.GetUserFriendCode(code)
 		result := database.AddFriend(friendsCode, curUserName)
-		if result == false {
+		if !result {
 			fmt.Print("Failed to add friend! Not found!")
 		} else {
 			fmt.Print("Use has been added!")
@@ -55,6 +56,8 @@ func main() {
 		for _, namez := range friendList {
 			fmt.Println("Friend name: ", namez)
 		}
+	case "c":
+		fmt.Println(database.GetUserFriendCode(curUserName))
 	default:
 		network.Send_file(result[0], result[1])
 	}

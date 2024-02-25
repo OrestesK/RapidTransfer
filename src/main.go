@@ -32,9 +32,6 @@ func main() {
 
 	// Checks the flags and sees which ones are used and valid for calling
 	result := CheckInputs(flags)
-	fmt.Println(result[0], result[1])
-
-	// Goes through all the arguments and executes which ever ones are neccesary
 	switch argument := result[0]; argument {
 
 	// Adds friend to your friends list, Usage -f name
@@ -44,18 +41,14 @@ func main() {
 		friendsCode := database.GetUserFriendCode(code)
 		result := database.AddFriend(friendsCode, curUserName)
 		if !result {
-			fmt.Print("Failed to add friend! Not found!")
+			fmt.Println("Failed to add friend! Not found!")
 		} else {
-			fmt.Print("Use has been added!")
+			fmt.Println("Use has been added!")
 		}
 
 	// Retrieves all of the pending transfers, Usage -pn all
 	case "pn":
-		database.GetPendingTransfers()
-		friends := database.GetFriendsList(curUserName)
-		fmt.Printf("friends: %v\n", friends)
-
-	// Receives the file that the user sent to you, Usage -r name
+		database.GetPendingTransfers(curUserName)
 	case "r":
 		network.Receive_file(result[1])
 

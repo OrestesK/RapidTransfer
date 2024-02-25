@@ -71,9 +71,10 @@ func GetUserDetails() (int, string, string, string) {
 	panic("WTF")
 }
 
-func GetPendingTransfers() {
+func GetPendingTransfers(username string) {
 	conn := GetConn()
-	rows, _ := conn.Query("SELECT users.name as host, transfer.keyword, filename FROM transfer INNER JOIN users ON users.id = transfer.userFrom WHERE userTo = $1", 3)
+	userID := GetUserID(username)
+	rows, _ := conn.Query("SELECT users.name as host, transfer.keyword, filename FROM transfer INNER JOIN users ON users.id = transfer.userFrom WHERE userTo = $1", userID)
 	for rows.Next() {
 
 		var host, keyword, filename string

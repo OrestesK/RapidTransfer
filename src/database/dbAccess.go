@@ -73,8 +73,6 @@ func GetUserDetails() (int, string, string, string) {
 
 func GetPendingTransfers() {
 	conn := GetConn()
-	// x := GetCurrentUser().id
-	// println(x)
 	rows, _ := conn.Query("SELECT users.name as host, transfer.keyword, filename FROM transfer INNER JOIN users ON users.id = transfer.userFrom WHERE userTo = $1", 3)
 	for rows.Next() {
 
@@ -188,7 +186,7 @@ func CreateAccount(username string, macAddress string) {
 	code := generateFriendCode()
 	_, err := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", username, code, macAddress)
 	if err != nil {
-		fmt.Print("Failed at CreateAccount: %s", err)
+		fmt.Printf("Failed at CreateAccount: %s", err)
 	}
 }
 
@@ -366,23 +364,11 @@ func GetFriendsList(username string) (friendsList []string) {
 	conn := GetConn()
 	userId := GetUserID(username)
 
-	rows, err := conn.Query(`
-	
-	SELECT ARRAY_AGG(users.name)
-	FROM users 
-	
-	INNER JOIN friends ON friends.friend_id=users.id
-	WHERE orig_user=$1 
-	
-	GROUP BY friends.orig_user`, userId)
+	var friendId int
+	rows, err := conn.Query("SELECT friend_id FROM friends WHERE orig_user=$1", userId)
 	if err != nil {
 		panic(err)
 	}
-<<<<<<< HEAD
-	defer rows.Close() // Close the rows at the end of the function
-
-	return friendsList
-=======
 	for rows.Next() {
 		rows.Scan(&friendId)
 		friendUser := GetUserNameByID(friendId)
@@ -391,5 +377,4 @@ func GetFriendsList(username string) (friendsList []string) {
 	}
 
 	return
->>>>>>> 3c851e3088db5eeb85ee13c1da1569e3fec4c084
 }

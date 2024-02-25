@@ -6,21 +6,36 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
 )
 
-const protocolID = "RapidTransfer"
+const protocolID = "RapidTransfer" // this is just a unique id, can be whatever, keeps the heckers away
 
-func server(node host.Host) {
+func initialize_node() host.Host {
+	// Create p2p node
+	// Listen only on ( ipv4 and tcp )
+	node, err := libp2p.New(
+		libp2p.ListenAddrStrings("/ip4/0.0.0.0/tcp/0"),
+		libp2p.Ping(false),
+	)
+	if err != nil {
+		panic(err)
+	}
+	return node
+}
+
+func server(node host.Host) string {
 	node.SetStreamHandler(protocolID, func(s network.Stream) {
 		go writeCounter(s)
 		go readCounter(s)
 	})
+
 	key := fmt.Sprintf("%s/p2p/%s", node.Addrs()[1], node.ID())
-	fmt.Println(key)
+	return key
 }
 
 func client(node host.Host, peerAddr string) {
@@ -70,6 +85,7 @@ func readCounter(s network.Stream) {
 	// TODO read the file contents
 
 	// infinite reading loop
+
 	for {
 		var counter uint64
 

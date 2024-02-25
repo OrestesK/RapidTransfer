@@ -32,7 +32,7 @@ func main() {
 
 	// Checks the flags and sees which ones are used and valid for calling
 	result := CheckInputs(flags)
-	//fmt.Println(result[0])
+	fmt.Println(result[0], result[1])
 	switch argument := result[0]; argument {
 	// Adds friend to your friends list, Usage -f name
 	case "f": //works
@@ -46,6 +46,7 @@ func main() {
 		}
 	// Retrieves all of the pending transfers, Usage -pn all
 	case "pn": // Works
+		fmt.Println("This is a debugging statement")
 		database.GetPendingTransfers(curUserName)
 	case "r": // Works
 		network.Receive_file(result[1])
@@ -61,7 +62,7 @@ func main() {
 	// Retrieves the users friend list, usage -fl all
 	case "fl": // works
 		friendList := database.GetFriendsList(curUserName)
-		fmt.Println("This is a debugging statement")
+		//fmt.Println("This is a debugging statement")
 		for _, namez := range friendList {
 			fmt.Println("Friend name: ", namez)
 		}
@@ -69,7 +70,6 @@ func main() {
 	case "c": // works
 		fmt.Println(database.GetUserFriendCode(curUserName))
 	default: // works
-
 		// Sending file to user, usage to_user file_path
 		network.Send_file(result[0], result[1])
 		fmt.Println("File has been sent and will be waiting to be accepted")

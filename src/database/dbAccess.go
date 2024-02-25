@@ -302,13 +302,7 @@ func IsFriend(userName1 string, userName2 string) (isFriend bool) {
 // Determines if two friends are mutual friends
 func AreMutualFriends(userName1 string, userName2 string) (areMutuals bool) {
 	areMutuals = false
-	friend1 := IsFriend(userName1, userName2)
-	friend2 := IsFriend(userName2, userName1)
-	if friend1 == friend2 {
-		areMutuals = true
-		return
-	}
-	return
+	return IsFriend(userName1, userName2) && IsFriend(userName2, userName1)
 }
 
 // Allows two users to send files to eachother
@@ -316,12 +310,13 @@ func PerformTransaction(senderName string, recieverName string, address string, 
 	conn := GetConn()
 	FromUserID := GetUserID(senderName)
 	ToUserID := GetUserID(recieverName)
-	
+
 	if AreMutualFriends(senderName, recieverName) {
 		phrase := generateFriendCode()
 		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, address, filename) VALUES ($1,$2,$3,$4)", FromUserID, ToUserID, phrase, address, filename)
 		if err != nil {
 			fmt.Print("Failed at PerformTransaction")
+			panic(err)
 		}
 		return phrase
 	}

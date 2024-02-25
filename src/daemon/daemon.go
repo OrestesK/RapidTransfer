@@ -30,4 +30,7 @@ func main() {
 	// wait :)
 	<-done
 
+	// delete transaction
+	database.DeleteTransaction(address)
+
 }

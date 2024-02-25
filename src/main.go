@@ -44,8 +44,7 @@ func main() {
 	} else if result[0] == "r" { // retrieve
 
 		// Receive message using result[1]
-		transaction_identifier := "abcd 123"
-		network.Receive_file(transaction_identifier)
+		network.Receive_file(result[1])
 	} else if result[0] == "d" { // delete friend
 
 		// index, _ := strconv.Atoi(result[1])

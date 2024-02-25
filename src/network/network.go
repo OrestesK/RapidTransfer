@@ -74,22 +74,19 @@ func writeCounter(s network.Stream, done chan bool) {
 	if err != nil {
 		panic(err)
 	}
+
 	done <- true
 }
 
 func readCounter(s network.Stream) {
 	// TODO read the file contents
 
-	// infinite reading loop
+	var counter uint64
 
-	for {
-		var counter uint64
-
-		err := binary.Read(s, binary.BigEndian, &counter)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Received %d from %s\n", counter, s.ID())
+	err := binary.Read(s, binary.BigEndian, &counter)
+	if err != nil {
+		panic(err)
 	}
+
+	fmt.Printf("Received %d from %s\n", counter, s.ID())
 }

@@ -28,10 +28,13 @@ func main() {
 	}
 
 	result := CheckInputs(flags)
+	fmt.Println(result[0], result[1])
 	if result[0] == "f" { // friend
-		friendsCode := database.GetUserFriendCode(result[1])
+		code := result[1]
+		fmt.Println(code)
+		friendsCode := database.GetUserFriendCode(code)
 		result := database.AddFriend(friendsCode, curUserName)
-		if (result == false) {
+		if result == false {
 			fmt.Print("Failed to add friend! Not found!")
 		} else {
 			fmt.Print("Use has been added!")
@@ -39,10 +42,7 @@ func main() {
 
 	} else if result[0] == "r" { // retrieve
 
-		// index, _ := strconv.Atoi(result[1])
-
-		// Receive message using result[1]
-	} else if result[0] == "d" { // delete friend
+	} else if result[0] == "d" { // delete file
 
 		// index, _ := strconv.Atoi(result[1])
 		// Delete friend using result[1]

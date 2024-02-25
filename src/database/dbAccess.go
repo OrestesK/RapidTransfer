@@ -299,16 +299,21 @@ func IsFriend(userName1 string, userName2 string) (isFriend bool) {
 	return
 }
 
+func GetAddressFromTransactionPhrase(phrase string) string {
+	conn := GetConn()
+	row := conn.QueryRow("SELECT address FROM transfer WHERE keyword = $1;", phrase)
+	var address string
+	err := row.Scan(&address)
+	if err != nil {
+		panic(err)
+	}
+	return address
+}
+
 // Determines if two friends are mutual friends
 func AreMutualFriends(userName1 string, userName2 string) (areMutuals bool) {
 	areMutuals = false
-	friend1 := IsFriend(userName1, userName2)
-	friend2 := IsFriend(userName2, userName1)
-	if friend1 == friend2 {
-		areMutuals = true
-		return
-	}
-	return
+	return IsFriend(userName1, userName2) && IsFriend(userName2, userName1)
 }
 
 // Allows two users to send files to eachother
@@ -316,12 +321,13 @@ func PerformTransaction(senderName string, recieverName string, address string, 
 	conn := GetConn()
 	FromUserID := GetUserID(senderName)
 	ToUserID := GetUserID(recieverName)
-	
+
 	if AreMutualFriends(senderName, recieverName) {
 		phrase := generateFriendCode()
-		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, address, filename) VALUES ($1,$2,$3,$4)", FromUserID, ToUserID, phrase, address, filename)
+		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, address, filename) VALUES ($1,$2,$3,$4,$5)", FromUserID, ToUserID, phrase, address, filename)
 		if err != nil {
 			fmt.Print("Failed at PerformTransaction")
+			panic(err)
 		}
 		return phrase
 	}

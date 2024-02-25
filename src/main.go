@@ -17,7 +17,7 @@ func main() {
 	_, curUserName, _, _ := database.GetUserDetails()
 	fmt.Println(curUserName)
 
-	s, p, friend, r, d := InitFlags()
+	s, p, friend, r, d, pend := InitFlags()
 	flag.Parse()
 	flags := Flag{
 		send:    *s,
@@ -25,6 +25,7 @@ func main() {
 		friend:  *friend,
 		recieve: *r,
 		delete:  *d,
+		pend: *pend,
 	}
 
 	result := CheckInputs(flags)
@@ -37,7 +38,9 @@ func main() {
 			fmt.Print("Use has been added!")
 		}
 
-	} else if result[0] == "r" { // retrieve
+	} else if result[0] == "pend" {
+		database.GetPendingTransfers()
+	}else if result[0] == "r" { // retrieve
 
 		// index, _ := strconv.Atoi(result[1])
 

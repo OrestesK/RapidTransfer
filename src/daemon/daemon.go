@@ -1,7 +1,6 @@
-package main
+package daemon
 
 import (
-	"Example/src"
 	"Example/src/database"
 	"fmt"
 	"os"

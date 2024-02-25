@@ -4,13 +4,16 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"time"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 const protocolID = "RapidTransfer" // this is just a unique id, can be whatever, keeps the heckers away
@@ -28,16 +31,16 @@ func Initialize_node() host.Host {
 	return node
 }
 
-func Server(node host.Host, done chan bool) string {
+func Server(node host.Host, file_name string, done chan bool) string {
 	node.SetStreamHandler(protocolID, func(s network.Stream) {
-		go writeCounter(s, done)
+		go write(s, file_name, done)
 	})
 
 	key := fmt.Sprintf("%s/p2p/%s", node.Addrs()[1], node.ID())
 	return key
 }
 
-func Client(node host.Host, peerAddr string) {
+func Client(node host.Host, peerAddr string, file_name string, done chan bool) {
 	// Parse the multiaddr string.
 	peerMA, err := multiaddr.NewMultiaddr(peerAddr)
 	if err != nil {
@@ -60,36 +63,74 @@ func Client(node host.Host, peerAddr string) {
 		panic(err)
 	}
 
-	go writeCounter(s, nil) // Start Write thread TODO FIX THIS
+	//TODO THIS GETS HERE
+	go read(s, file_name, done) // Start Read thread
 }
 
-func writeCounter(s network.Stream, done chan bool) {
-	// TODO write the file contents
-	var counter uint64
+func write(s network.Stream, file_name string, done chan bool) {
+	pwd, _ := os.Getwd()
+	path := filepath.FromSlash(pwd + "/" + strings.TrimSuffix(file_name, "\r\n"))
+	bytes, err := os.ReadFile(path)
 
-	<-time.After(time.Second)
-	counter++
-
-	err := binary.Write(s, binary.BigEndian, counter)
 	if err != nil {
-		panic(err)
+		done <- true
+		fmt.Println(err)
+		return
 	}
+
+	err = binary.Write(s, binary.BigEndian, int64(len(bytes))) // Send the length of data
+	if err != nil {
+		done <- true
+		fmt.Println(err)
+		return
+	}
+
+	err = binary.Write(s, binary.BigEndian, bytes) // Send the actual data
+	if err != nil {
+		done <- true
+		fmt.Println(err)
+		return
+	}
+
 	done <- true
 }
 
-func readCounter(s network.Stream) {
-	// TODO read the file contents
-
-	// infinite reading loop
-
-	for {
-		var counter uint64
-
-		err := binary.Read(s, binary.BigEndian, &counter)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("Received %d from %s\n", counter, s.ID())
+func read(s network.Stream, file_name string, done chan bool) {
+	var dataLength int64
+	err := binary.Read(s, binary.BigEndian, &dataLength)
+	if err != nil {
+		done <- true
+		fmt.Println(err)
+		return
 	}
+
+	byteArray := make([]byte, dataLength)
+	err = binary.Read(s, binary.BigEndian, &byteArray)
+	if err != nil {
+		done <- true
+		fmt.Println(err)
+		return
+	}
+
+	err = os.WriteFile(file_name, byteArray, fs.FileMode(0755))
+	if err != nil {
+		// Handle access denied by creating a new file with a modified name
+		count := 1
+		for {
+			newFileName := fmt.Sprintf("%d%s", file_name, count)
+			err = os.WriteFile(newFileName, byteArray, fs.FileMode(0755))
+			if err == nil {
+				fmt.Printf("File saved as %s\n", newFileName)
+				break
+			}
+			count++
+		}
+	} else {
+		done <- true
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("File saved as file.txt")
+
+	done <- true
 }

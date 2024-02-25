@@ -12,11 +12,8 @@ import (
 func main() {
 	database.InitializeDatabase()
 	database.HandleAccountStartup()
-	curUser := database.GetCurrentUser()
 
-	fmt.Println(curUser)
 	_, curUserName, _, _ := database.GetUserDetails()
-	fmt.Println(curUserName)
 
 	s, p, friend, r, d, pend := InitFlags()
 	flag.Parse()
@@ -41,6 +38,8 @@ func main() {
 
 	} else if result[0] == "pend" {
 		database.GetPendingTransfers()
+		friends := database.GetFriendsList(curUserName)
+		fmt.Printf("friends: %v\n", friends)
 	} else if result[0] == "r" { // retrieve
 
 		// Receive message using result[1]
@@ -57,5 +56,5 @@ func main() {
 		log.Fatal("No arguments given that match anything available")
 	}
 
-	fmt.Println(CheckInputs(flags))
+	// fmt.Println(CheckInputs(flags))
 }

@@ -43,7 +43,7 @@ func InitializeDatabase() {
 	// conn.Exec("DROP TABLE transfer; DROP TABLE users; DROP TABLE friends; DROP TABLE user;")
 
 	conn.Exec("CREATE TABLE IF NOT EXISTS transfer (id SERIAL PRIMARY KEY, userFrom INT NOT NULL, userTo INT NOT NULL, keyword VARCHAR(100), address VARCHAR(100), filename VARCHAR(100))")
-	conn.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL DEFAULT '', keyword VARCHAR(100), macaddr VARCHAR(100))")
+	conn.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE, keyword VARCHAR(100), macaddr VARCHAR(100))")
 	conn.Exec("CREATE TABLE IF NOT EXISTS friends (orig_user INT NOT NULL, friend_id INT NOT NULL, total_transfers INT NOT NULL DEFAULT 0)")
 
 }
@@ -74,13 +74,13 @@ func GetUserDetails() (int, string, string, string) {
 func GetPendingTransfers() {
 	conn := GetConn()
 	x := GetCurrentUser().id
-	rows, _ := conn.Query("SELECT * FROM transfer WHERE userTo = $1", x)
+	println(x)
+	rows, _ := conn.Query("SELECT users.name as host, transfer.keyword, filename FROM transfer INNER JOIN users ON users.id = transfer.userFrom WHERE userTo = $1", 3)
 	for rows.Next() {
 
-		var userFrom, userTo, keyword, address, filename string
-		var id int
+		var host, keyword, filename string
 
-		err := rows.Scan(&id, &userFrom, &userTo, &keyword, &address, &filename)
+		err := rows.Scan(&host, &keyword, &filename)
 		if err != nil {
 			// Handle the error
 			fmt.Println("Error scanning row:", err)
@@ -88,7 +88,7 @@ func GetPendingTransfers() {
 		}
 
 		// Print the values or perform any other desired operation
-		fmt.Printf("ID: %d, UserFrom: %s, UserTo: %s, Keyword: %s, Address: %s, Filename: %s\n", id, userFrom, userTo, keyword, address, filename)
+		fmt.Printf("Host: %s, Keyword: %s, Filename: %s\n", host, keyword, filename)
 	}
 
 	// Check for errors from iterating over rows
@@ -188,7 +188,7 @@ func CreateAccount(username string, macAddress string) {
 	code := generateFriendCode()
 	_, err := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", username, code, macAddress)
 	if err != nil {
-		fmt.Print("Failed at CreateAccount")
+		fmt.Print("Failed at CreateAccount: %s", err)
 	}
 }
 
@@ -265,6 +265,14 @@ func AddFriend(friendCode string, senderName string) (success bool) {
 		return false
 	}
 	senderID := GetUserID(senderName)
+
+	row := conn.QueryRow("SELECT COUNT(*) FROM friends WHERE orig_user = $1 AND friend_id = $2", senderID, friendID)
+	var count int
+	row.Scan(&count)
+	if count > 0 {
+		fmt.Print("Friend is already added!")
+		return
+	}
 
 	_, err2 := conn.Exec("INSERT INTO friends VALUES ($1, $2)", senderID, friendID)
 	_, err3 := conn.Exec("INSERT INTO friends VALUES ($1, $2)", friendID, senderID)
@@ -357,15 +365,18 @@ func PerformTransaction(senderName string, recieverName string, address string, 
 func GetFriendsList(username string) (friendsList []string) {
 	conn := GetConn()
 	userId := GetUserID(username)
-	var idList []int
-	err := conn.QueryRow("SELECT friend_id FROM friends WHERE orig_user=$1", userId).Scan(&idList)
+
+	var friendId int
+	rows, err := conn.Query("SELECT friend_id FROM friends WHERE orig_user=$1", userId)
 	if err != nil {
-		fmt.Println("Failed at GetFriendsList")
-		return
+		panic(err)
 	}
-	for _, id := range idList {
-		friendUser := GetUserNameByID(id)
+	for rows.Next() {
+		rows.Scan(&friendId)
+		friendUser := GetUserNameByID(friendId)
+		println(friendUser)
 		friendsList = append(friendsList, friendUser)
 	}
+	
 	return
 }

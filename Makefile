@@ -5,7 +5,7 @@ build:
 	@go build ${FLAGS} -o ${BINARY_NAME} src/*.go
 
 main:
-	@go run src/main.go src/network.go src/parser.go $(ARG)
+	@go run src/main.go src/parser.go $(ARG)
 
 server: build
 	@./${BINARY_NAME}

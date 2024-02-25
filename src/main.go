@@ -2,7 +2,6 @@ package main
 
 import (
 	"Example/src/database"
-	"Example/src/network"
 	"flag"
 	"fmt"
 	"log"
@@ -44,8 +43,8 @@ func main() {
 	} else if result[0] == "r" { // retrieve
 
 		// Receive message using result[1]
-		transaction_identifier := "abcd 123"
-		network.Receive_file(transaction_identifier)
+		//transaction_identifier := "abcd 123"
+		//network.Receive_file(transaction_identifier)
 	} else if result[0] == "d" { // delete friend
 
 		// index, _ := strconv.Atoi(result[1])
@@ -53,7 +52,7 @@ func main() {
 
 	} else if len(result) == 2 { // send
 		// start daemon
-		network.Send_file(result[0], result[1])
+		//network.Send_file(result[0], result[1])
 	} else {
 		log.Fatal("No arguments given that match anything available")
 	}

@@ -2,7 +2,7 @@ BINARY_NAME= bin/RapidTransfer
 FLAGS=-ldflags "-s -w"
 
 build:
-	@go build ${FLAGS} -o ${BINARY_NAME} src/main.go
+	@go build ${FLAGS} -o ${BINARY_NAME} src/*.go
 
 server: build
 	@./${BINARY_NAME}

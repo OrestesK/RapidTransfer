@@ -40,14 +40,17 @@ func CheckInputs(flags Flag) [2]string {
 	if flags.delete != -1 {
 		return [...]string{"d", string(rune(flags.delete))}
 	}
+	// Checks for usage of pending results command
 	if len(flags.pend) != 0 {
 		return [...]string{"pn", flags.pend}
 
 	}
+	// Checks for usage of the code command
 	if len(flags.code) != 0 {
 		return [...]string{"c", flags.code}
 
 	}
+	// Checks for the usage of friends list command
 	if len(flags.fList) != 0 {
 		return [...]string{"fl", flags.fList}
 	}
@@ -56,6 +59,7 @@ func CheckInputs(flags Flag) [2]string {
 	return result
 }
 
+// Creation of the flag struct
 type Flag struct {
 	send    string
 	path    string

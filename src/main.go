@@ -13,9 +13,11 @@ func main() {
 	database.HandleAccountStartup()
 
 	_, curUserName, _, _ := database.GetUserDetails()
-
+	// Retrieves the flags from the init
 	s, p, f, r, d, pn, fl, c := InitFlags()
 	flag.Parse()
+
+	// Creation of the the flag struct and all flags that can be called
 	flags := Flag{
 		send:    *s,
 		path:    *p,
@@ -27,9 +29,14 @@ func main() {
 		code:    *c,
 	}
 
+	// Checks the flags and sees which ones are used and valid for calling
 	result := CheckInputs(flags)
 	fmt.Println(result[0], result[1])
+
+	// Goes through all the arguments and executes which ever ones are neccesary
 	switch argument := result[0]; argument {
+
+	// Adds friend to your friends list, Usage -f name
 	case "f":
 		code := result[1]
 		fmt.Println(code)
@@ -41,24 +48,32 @@ func main() {
 			fmt.Print("Use has been added!")
 		}
 
+	// Retrieves all of the pending transfers, Usage -pn all
 	case "pn":
 		database.GetPendingTransfers()
 		friends := database.GetFriendsList(curUserName)
 		fmt.Printf("friends: %v\n", friends)
 
+	// Receives the file that the user sent to you, Usage -r name
 	case "r":
 		network.Receive_file(result[1])
 
+	// Deletes file inside of the inbox, usage -d index
 	case "d":
 
+	// Retrieves the users friend list, usage -fl all
 	case "fl":
 		friendList := database.GetFriendsList(curUserName)
 		for _, namez := range friendList {
 			fmt.Println("Friend name: ", namez)
 		}
+
+	// Retrieves the users friend code, Usage -c self
 	case "c":
 		fmt.Println(database.GetUserFriendCode(curUserName))
 	default:
+
+		// Sending file to user, usage to_user file_path
 		network.Send_file(result[0], result[1])
 	}
 

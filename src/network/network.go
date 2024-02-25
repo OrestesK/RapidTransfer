@@ -1,4 +1,4 @@
-package main
+package network
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 
 const protocolID = "RapidTransfer" // this is just a unique id, can be whatever, keeps the heckers away
 
-func initialize_node() host.Host {
+func Initialize_node() host.Host {
 	// Create p2p node
 	// Listen only on ( ipv4 and tcp )
 	node, err := libp2p.New(
@@ -28,17 +28,16 @@ func initialize_node() host.Host {
 	return node
 }
 
-func server(node host.Host) string {
+func Server(node host.Host, done chan bool) string {
 	node.SetStreamHandler(protocolID, func(s network.Stream) {
-		go writeCounter(s)
-		go readCounter(s)
+		go writeCounter(s, done)
 	})
 
 	key := fmt.Sprintf("%s/p2p/%s", node.Addrs()[1], node.ID())
 	return key
 }
 
-func client(node host.Host, peerAddr string) {
+func Client(node host.Host, peerAddr string) {
 	// Parse the multiaddr string.
 	peerMA, err := multiaddr.NewMultiaddr(peerAddr)
 	if err != nil {
@@ -61,24 +60,21 @@ func client(node host.Host, peerAddr string) {
 		panic(err)
 	}
 
-	go writeCounter(s) // Start Write thread
-	go readCounter(s)  // Start Read thread
+	go writeCounter(s, nil) // Start Write thread TODO FIX THIS
 }
 
-func writeCounter(s network.Stream) {
+func writeCounter(s network.Stream, done chan bool) {
 	// TODO write the file contents
 	var counter uint64
 
-	// infinite writing loop
-	for {
-		<-time.After(time.Second)
-		counter++
+	<-time.After(time.Second)
+	counter++
 
-		err := binary.Write(s, binary.BigEndian, counter)
-		if err != nil {
-			panic(err)
-		}
+	err := binary.Write(s, binary.BigEndian, counter)
+	if err != nil {
+		panic(err)
 	}
+	done <- true
 }
 
 func readCounter(s network.Stream) {

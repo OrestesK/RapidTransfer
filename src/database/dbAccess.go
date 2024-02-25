@@ -68,7 +68,7 @@ func GetUserDetails() (int, string, string, string) {
 	if currentUser != nil {
 		return currentUser.id, currentUser.name, currentUser.keyword, currentUser.macaddr
 	}
-	return -1, "", "", ""
+	panic("WTF")
 }
 
 func GetPendingTransfers() {
@@ -104,7 +104,10 @@ func GetPendingTransfers() {
 */
 func HandleAccountStartup() {
 	conn := GetConn()
-	macAddr, _ := getMacAddress()
+	macAddr, erro := getMacAddress()
+	if erro != nil {
+		panic(erro)
+	}
 	row := conn.QueryRow("SELECT * FROM users WHERE macaddr = $1", macAddr)
 
 	var id int
@@ -202,9 +205,11 @@ func GetUserFriendCode(name string) (userKey string) {
 // Retrieves a user's id based on their name, which is passed in
 func GetUserID(name string) (userID int) {
 	conn := GetConn()
+	fmt.Printf("Name: %s\n", name)
 	err := conn.QueryRow("SELECT id FROM users WHERE name=$1", (name)).Scan(&userID)
 	if err != nil {
 		fmt.Print("Failed at GetUserID")
+		panic(err)
 	}
 	return
 }
@@ -322,4 +327,20 @@ func PerformTransaction(senderName string, recieverName string, address string, 
 	}
 	fmt.Print("Failed to create transaction")
 	return ""
+}
+
+func GetFriendsList(username string) (friendsList []string) {
+	conn := GetConn()
+	userId := GetUserID(username)
+	var idList []int
+	err := conn.QueryRow("SELECT friend_id FROM friends WHERE orig_user=$1", userId).Scan(&idList)
+	if err != nil {
+		fmt.Println("Failed at GetFriendsList")
+		return
+	}
+	for _, id := range idList {
+		friendUser := GetUserNameByID(id)
+		friendsList = append(friendsList, friendUser)
+	}
+	return
 }

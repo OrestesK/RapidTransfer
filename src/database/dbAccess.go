@@ -68,7 +68,7 @@ func GetUserDetails() (int, string, string, string) {
 	if currentUser != nil {
 		return currentUser.id, currentUser.name, currentUser.keyword, currentUser.macaddr
 	}
-	return -1, "", "", ""
+	panic("WTF")
 }
 
 /*
@@ -78,7 +78,10 @@ func GetUserDetails() (int, string, string, string) {
 */
 func HandleAccountStartup() {
 	conn := GetConn()
-	macAddr, _ := getMacAddress()
+	macAddr, erro := getMacAddress()
+	if erro != nil {
+		panic(erro)
+	}
 	row := conn.QueryRow("SELECT * FROM users WHERE macaddr = $1", macAddr)
 
 	var id int

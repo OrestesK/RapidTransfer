@@ -179,6 +179,7 @@ func GetUserFriendCode(name string) (userKey string) {
 // Retrieves a user's id based on their name, which is passed in
 func GetUserID(name string) (userID int) {
 	conn := GetConn()
+	fmt.Printf("Name: %s\n", name)
 	err := conn.QueryRow("SELECT id FROM users WHERE name=$1", (name)).Scan(&userID)
 	if err != nil {
 		fmt.Print("Failed at GetUserID")
@@ -291,8 +292,7 @@ func PerformTransaction(senderName string, recieverName string, phrase string, f
 	ToUserID := GetUserID(recieverName)
 
 	if AreMutualFriends(senderName, recieverName) {
-		keyword = generateFriendCode()
-		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, filename) VALUES ($1,$2,$3,$4)", FromUserID, ToUserID, keyword, filename)
+		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, filename) VALUES ($1,$2,$3,$4)", FromUserID, ToUserID, phrase, filename)
 		if err != nil {
 			fmt.Print("Failed at PerformTransaction")
 		}

@@ -73,8 +73,8 @@ func GetUserDetails() (int, string, string, string) {
 
 func GetPendingTransfers() {
 	conn := GetConn()
-	x := GetCurrentUser().id
-	println(x)
+	// x := GetCurrentUser().id
+	// println(x)
 	rows, _ := conn.Query("SELECT users.name as host, transfer.keyword, filename FROM transfer INNER JOIN users ON users.id = transfer.userFrom WHERE userTo = $1", 3)
 	for rows.Next() {
 
@@ -377,6 +377,6 @@ func GetFriendsList(username string) (friendsList []string) {
 		println(friendUser)
 		friendsList = append(friendsList, friendUser)
 	}
-	
+
 	return
 }

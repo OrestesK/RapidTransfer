@@ -14,7 +14,7 @@ func main() {
 
 	_, curUserName, _, _ := database.GetUserDetails()
 	// Retrieves the flags from the init
-	s, p, f, r, d, pn, fl, c := InitFlags()
+	s, p, f, r, d, pn, fl, c, df := InitFlags()
 	flag.Parse()
 
 	// Creation of the the flag struct and all flags that can be called
@@ -24,6 +24,7 @@ func main() {
 		friend:  *f,
 		recieve: *r,
 		delete:  *d,
+		dfriend: *df,
 		fList:   *fl,
 		pend:    *pn,
 		code:    *c,
@@ -53,7 +54,10 @@ func main() {
 
 	// Deletes file inside of the inbox, usage -d index
 	case "d":
-
+		network.Fake_receive_file(result[1])
+	// Deletes friend when given the username
+	case "df":
+		database.DeleteFriend(curUserName, result[1])
 	// Retrieves the users friend list, usage -fl all
 	case "fl":
 		friendList := database.GetFriendsList(curUserName)

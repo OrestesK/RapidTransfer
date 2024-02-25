@@ -24,9 +24,7 @@ func Receive_file(transaction_identifier string) {
 	node := Initialize_node()
 	_, name, _, _ := database.GetUserDetails()
 	id := database.GetUserID(name)
-	fmt.Printf("id: %v\n", id)
 	result := database.UserCanViewTransaction(id, transaction_identifier)
-	fmt.Printf("result: %v\n", result)
 	if !result {
 		// Cannot view this transaction.
 		fmt.Print("You cannot download this file.")

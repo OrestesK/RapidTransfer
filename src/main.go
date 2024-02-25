@@ -30,7 +30,7 @@ func main() {
 
 	result := CheckInputs(flags)
 	if result[0] == "f" { // friend
-		friendsCode := database.GetUserFriendCode(result[1])
+		friendsCode, _ := database.GetUserFriendCode(result[1])
 		result := database.AddFriend(friendsCode, curUserName)
 		if result == false {
 			fmt.Print("Failed to add friend! Not found!")

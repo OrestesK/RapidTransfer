@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Example/src"
 	"Example/src/database"
 	"fmt"
 	"os"
@@ -28,12 +29,12 @@ func main() {
 	user_from := args[0]
 	user_to := args[1]
 	file_name := args[2]
+
+	node := main.Initialize_node()
+
 	// I will computer and provide key
+	key := main.Server(node)
 
-	// TODO INITIALIZE DATABASE
-	node := initialize_node()
-	key := server(node)
-
-	database.PerformTransaction(user_from, user_to, file_name, key)
+	database.PerformTransaction(user_from, user_to, key, file_name)
 
 }

@@ -15,7 +15,7 @@ import (
 
 const protocolID = "RapidTransfer" // this is just a unique id, can be whatever, keeps the heckers away
 
-func initialize_node() host.Host {
+func Initialize_node() host.Host {
 	// Create p2p node
 	// Listen only on ( ipv4 and tcp )
 	node, err := libp2p.New(
@@ -28,7 +28,7 @@ func initialize_node() host.Host {
 	return node
 }
 
-func server(node host.Host) string {
+func Server(node host.Host) string {
 	node.SetStreamHandler(protocolID, func(s network.Stream) {
 		go writeCounter(s)
 		go readCounter(s)
@@ -38,7 +38,7 @@ func server(node host.Host) string {
 	return key
 }
 
-func client(node host.Host, peerAddr string) {
+func Client(node host.Host, peerAddr string) {
 	// Parse the multiaddr string.
 	peerMA, err := multiaddr.NewMultiaddr(peerAddr)
 	if err != nil {

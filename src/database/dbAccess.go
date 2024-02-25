@@ -378,7 +378,18 @@ func GetFriendsList(username string) (friendsList []string) {
 	if err != nil {
 		panic(err)
 	}
+<<<<<<< HEAD
 	defer rows.Close() // Close the rows at the end of the function
 
 	return friendsList
+=======
+	for rows.Next() {
+		rows.Scan(&friendId)
+		friendUser := GetUserNameByID(friendId)
+		println(friendUser)
+		friendsList = append(friendsList, friendUser)
+	}
+
+	return
+>>>>>>> 3c851e3088db5eeb85ee13c1da1569e3fec4c084
 }

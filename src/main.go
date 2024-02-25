@@ -32,7 +32,7 @@ func main() {
 
 	// Checks the flags and sees which ones are used and valid for calling
 	result := CheckInputs(flags)
-	fmt.Println(result[0])
+	//fmt.Println(result[0])
 	switch argument := result[0]; argument {
 	// Adds friend to your friends list, Usage -f name
 	case "f": //works

@@ -16,13 +16,13 @@ func main() {
 
 	done := make(chan bool)
 	// I will computer and provide key
-	key := network.Server(node, done)
+	address := network.Server(node, done)
 
 	// initialize user
 	database.HandleAccountStartup()
 	_, user_from, _, _ := database.GetUserDetails()
 
-	database.PerformTransaction(user_from, user_to, key, file_name)
+	database.PerformTransaction(user_from, user_to, address, file_name)
 
 	// wait :)
 	<-done

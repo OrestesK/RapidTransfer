@@ -24,5 +24,8 @@ func Send_file(user_to string, filename string) {
 }
 
 func Receive_file(transaction_identifier string) {
-
+	// node := Initialize_node()
+	// TODO
+	// database get key (big one) given transaction id (small one)
+	// Client(node)
 }

@@ -183,13 +183,17 @@ func getMacAddress() (string, error) {
 	Creates an account in the database with specifid username/macaddr.
 	MacAddr is unique to the computer, and is used on startup to indentify the pc.
 */
-func CreateAccount(username string, macAddress string) {
+func CreateAccount(username string, macAddress string) (created bool) {
+	created = true
 	conn := GetConn()
 	code := generateFriendCode()
 	_, err := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", username, code, macAddress)
 	if err != nil {
 		fmt.Print("Failed at CreateAccount")
+		created = false
+		return
 	}
+	return
 }
 
 // Retrieves a user's freind code based on their name, which is passed in

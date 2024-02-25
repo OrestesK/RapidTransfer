@@ -16,7 +16,7 @@ func main() {
 
 	done := make(chan bool)
 	// I will computer and provide key
-	address := network.Server(node, done)
+	address := network.Server(node, file_name, done)
 
 	// initialize user
 	database.HandleAccountStartup()

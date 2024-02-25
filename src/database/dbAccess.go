@@ -310,6 +310,17 @@ func GetAddressFromTransactionPhrase(phrase string) string {
 	return address
 }
 
+func GetFileNameFromTransactionPhrase(phrase string) string {
+	conn := GetConn()
+	row := conn.QueryRow("SELECT filename FROM transfer WHERE keyword = $1;", phrase)
+	var filename string
+	err := row.Scan(&filename)
+	if err != nil {
+		panic(err)
+	}
+	return filename
+}
+
 func DeleteTransactionWithAddress(address string) {
 	conn := GetConn()
 	_, err := conn.Exec("DELETE FROM transfer WHERE address = $1;", address)

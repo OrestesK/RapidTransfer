@@ -6,17 +6,18 @@ import (
 )
 
 // Creates the flags that are going to be used and assigns them values
-func InitFlags() (*string, *string, *string, *string, *int, *string, *string, *string) {
+func InitFlags() (*string, *string, *string, *string, *string, *string, *string, *string, *string) {
 	s := flag.String("s", "", "Send to user")
 	p := flag.String("p", "", "Path to file")
 	f := flag.String("f", "", "Adding user to friends list")
 	r := flag.String("r", "", "code of message receiving")
-	d := flag.Int("d", -1, "Index of message deleting")
+	d := flag.String("d", "", "Index of message deleting")
+	df := flag.String("df", "", "Removes friend when given name")
 	pn := flag.String("pn", "", "Pending file transfers")
 	fl := flag.String("fl", "", "Retrieve friend list")
 	c := flag.String("c", "", "Retrieve personal friend code")
 
-	return s, p, f, r, d, pn, fl, c
+	return s, p, f, r, d, pn, fl, c, df
 }
 
 // Checks the flags for data
@@ -37,13 +38,17 @@ func CheckInputs(flags Flag) [2]string {
 		return [...]string{"r", flags.recieve}
 	}
 	// Checks to see if user is deleting a file from the inbox
-	if flags.delete != -1 {
-		return [...]string{"d", string(rune(flags.delete))}
+	if len(flags.delete) != 0 {
+		return [...]string{"d", flags.delete}
 	}
 	// Checks for usage of pending results command
 	if len(flags.pend) != 0 {
 		return [...]string{"pn", flags.pend}
 
+	}
+	// Checks to see if someone use the delete friend command
+	if len(flags.dfriend) != 0 {
+		return [...]string{"df", flags.dfriend}
 	}
 	// Checks for usage of the code command
 	if len(flags.code) != 0 {
@@ -65,7 +70,8 @@ type Flag struct {
 	path    string
 	friend  string
 	recieve string
-	delete  int
+	delete  string
+	dfriend string
 	pend    string
 	fList   string
 	code    string

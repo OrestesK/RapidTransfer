@@ -15,16 +15,16 @@ func main() {
 
 	_, curUserName, _, _ := database.GetUserDetails()
 
-	s, p, friend, r, d, pend, fList := InitFlags()
+	s, p, f, r, d, pn, fl := InitFlags()
 	flag.Parse()
 	flags := Flag{
 		send:    *s,
 		path:    *p,
-		friend:  *friend,
+		friend:  *f,
 		recieve: *r,
 		delete:  *d,
-		fList:   *fList,
-		pend:    *pend,
+		fList:   *fl,
+		pend:    *pn,
 	}
 
 	result := CheckInputs(flags)
@@ -40,7 +40,7 @@ func main() {
 			fmt.Print("Use has been added!")
 		}
 
-	} else if result[0] == "pend" {
+	} else if result[0] == "pn" {
 		database.GetPendingTransfers()
 		friends := database.GetFriendsList(curUserName)
 		fmt.Printf("friends: %v\n", friends)
@@ -53,7 +53,7 @@ func main() {
 		// index, _ := strconv.Atoi(result[1])
 		// Delete friend using result[1]
 
-	} else if result[0] == "fList" {
+	} else if result[0] == "fl" {
 		friendList := database.GetFriendsList(curUserName)
 		for namez := range friendList {
 			fmt.Println("Friend name: ", namez)

@@ -69,7 +69,9 @@ func main() {
 	// Retrieves the users friend code, Usage -c self
 	case "c": // works
 		fmt.Println(database.GetUserFriendCode(curUserName))
-	default: // works
+	}
+
+	if len(result[0]) > 1 && len(result[0]) > 1 {
 		// Sending file to user, usage to_user file_path
 		network.Send_file(result[0], result[1])
 		fmt.Println("File has been sent and will be waiting to be accepted")

@@ -191,7 +191,7 @@ func GetUserFriendCode(keyword string) (userKey string) {
 // Retrieves a user's id based on their name, which is passed in
 func GetUserID(name string) (userID int) {
 	conn := GetConn()
-	fmt.Printf("Name: %s\n", name)
+	//fmt.Printf("Name: %s\n", name)
 	err := conn.QueryRow("SELECT id FROM users WHERE name=$1", name).Scan(&userID)
 	if err != nil {
 		fmt.Print("Failed at GetUserID")

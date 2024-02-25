@@ -42,7 +42,7 @@ func InitializeDatabase() {
 	var conn *pgx.Conn = GetConn()
 	// conn.Exec("DROP TABLE transfer; DROP TABLE users; DROP TABLE friends; DROP TABLE user;")
 
-	conn.Exec("CREATE TABLE IF NOT EXISTS transfer (userFrom INT NOT NULL, userTo INT NOT NULL, keyword VARCHAR(100))")
+	conn.Exec("CREATE TABLE IF NOT EXISTS transfer (id SERIAL PRIMARY KEY, userFrom INT NOT NULL, userTo INT NOT NULL, keyword VARCHAR(100), filename VARCHAR(100))")
 	conn.Exec("CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL DEFAULT '', keyword VARCHAR(100), macaddr VARCHAR(100))")
 	conn.Exec("CREATE TABLE IF NOT EXISTS friends (orig_user INT NOT NULL, friend_id INT NOT NULL, total_transfers INT NOT NULL DEFAULT 0)")
 
@@ -71,6 +71,11 @@ func GetUserDetails() (int, string, string, string) {
 	return -1, "", "", ""
 }
 
+/*
+*
+
+	Called on process start. This will find the user if it exists in the database. If not, it will ask to create an account.
+*/
 func HandleAccountStartup() {
 	conn := GetConn()
 	macAddr, _ := getMacAddress()
@@ -143,6 +148,12 @@ func getMacAddress() (string, error) {
 	return "", fmt.Errorf("MAC address not found")
 }
 
+/*
+*
+
+	Creates an account in the database with specifid username/macaddr.
+	MacAddr is unique to the computer, and is used on startup to indentify the pc.
+*/
 func CreateAccount(username string, macAddress string) {
 	conn := GetConn()
 	code := generateFriendCode()
@@ -212,7 +223,7 @@ func GetTransaction(keyword string) (names []string) {
 }
 
 // Adds a friend to a senders friends list based on their friend code
-func AddFriend(friendCode string, senderName string) (friendName string) {
+func AddFriend(friendCode string, senderName string) (success bool) {
 	conn := GetConn()
 	var friendID int
 	fmt.Printf("friendcode: %s\n", friendCode)
@@ -220,7 +231,7 @@ func AddFriend(friendCode string, senderName string) (friendName string) {
 	fmt.Printf("FriendID From Code: %d\n", friendID)
 	if err != nil {
 		fmt.Print("Failed at AddFriend")
-		return
+		return false
 	}
 	senderID := GetUserID(senderName)
 
@@ -229,13 +240,11 @@ func AddFriend(friendCode string, senderName string) (friendName string) {
 	if err2 != nil || err3 != nil {
 		fmt.Print("Failed at AddFriend 2")
 	}
-
-	friendName = GetUserNameByID(friendID)
-	return
+	return true
 }
 
 // Deletes a one way friendship between two users
-func DeleteFriend(senderName, recieverName string) (deletedFriend string) {
+func DeleteFriend(senderName string, recieverName string) (deletedFriend string) {
 	conn := GetConn()
 	senderId := GetUserID(senderName)
 	recieverId := GetUserID(recieverName)
@@ -246,7 +255,7 @@ func DeleteFriend(senderName, recieverName string) (deletedFriend string) {
 	return
 }
 
-func IsFriend(userName1, userName2 string) (isFriend bool) {
+func IsFriend(userName1 string, userName2 string) (isFriend bool) {
 	isFriend = false
 	conn := GetConn()
 	user1Id := GetUserID(userName1)
@@ -260,7 +269,7 @@ func IsFriend(userName1, userName2 string) (isFriend bool) {
 }
 
 // Determines if two friends are mutual friends
-func AreMutualFriends(userName1, userName2 string) (areMutuals bool) {
+func AreMutualFriends(userName1 string, userName2 string) (areMutuals bool) {
 	areMutuals = false
 	friend1 := IsFriend(userName1, userName2)
 	friend2 := IsFriend(userName2, userName1)
@@ -272,13 +281,14 @@ func AreMutualFriends(userName1, userName2 string) (areMutuals bool) {
 }
 
 // Allows two users to send files to eachother
-func PerformTransaction(senderName, recieverName string) (keyword string) {
+func PerformTransaction(senderName string, recieverName string, phrase string, filename string) (keyword string) {
 	conn := GetConn()
 	FromUserID := GetUserID(senderName)
 	ToUserID := GetUserID(recieverName)
+
 	if AreMutualFriends(senderName, recieverName) {
 		keyword = generateFriendCode()
-		_, err := conn.Exec("INSERT INTO transfer VALUES ($1,$2,$3)", FromUserID, ToUserID, keyword)
+		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, filename) VALUES ($1,$2,$3,$4)", FromUserID, ToUserID, keyword, filename)
 		if err != nil {
 			fmt.Print("Failed at PerformTransaction")
 		}

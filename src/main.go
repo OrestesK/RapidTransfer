@@ -12,6 +12,7 @@ func main() {
 	database.InitializeDatabase()
 	database.HandleAccountStartup()
 	curUser := database.GetCurrentUser()
+
 	fmt.Println(curUser)
 	_, curUserName, _, _ := database.GetUserDetails()
 	fmt.Println(curUserName)
@@ -29,7 +30,12 @@ func main() {
 	result := CheckInputs(flags)
 	if result[0] == "f" { // friend
 		friendsCode := database.GetUserFriendCode(result[1])
-		database.AddFriend(friendsCode, curUserName)
+		result := database.AddFriend(friendsCode, curUserName)
+		if (result == false) {
+			fmt.Print("Failed to add friend! Not found!")
+		} else {
+			fmt.Print("Use has been added!")
+		}
 
 	} else if result[0] == "r" { // retrieve
 
@@ -42,6 +48,7 @@ func main() {
 		// Delete friend using result[1]
 
 	} else if len(result) == 2 { // send
+		// database.PerformTransaction()
 		// Send file
 	} else {
 		log.Fatal("No arguments given that match anything available")

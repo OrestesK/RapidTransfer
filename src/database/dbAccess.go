@@ -357,10 +357,11 @@ func PerformTransaction(senderName string, recieverName string, address string, 
 func GetFriendsList(username string) (friendsList []string) {
 	conn := GetConn()
 	userId := GetUserID(username)
+	fmt.Println(userId)
 	var idList []int
 	err := conn.QueryRow("SELECT friend_id FROM friends WHERE orig_user=$1", userId).Scan(&idList)
 	if err != nil {
-		fmt.Println("Failed at GetFriendsList")
+		fmt.Println("Failed at GetFriendsList", err)
 		return
 	}
 	for _, id := range idList {

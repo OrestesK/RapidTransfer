@@ -12,7 +12,7 @@ func InitFlags() (*string, *string, *string, *string, *int, *string, *string) {
 	friend := flag.String("friend", "", "Adding user to friends list")
 	r := flag.String("r", "", "code of message receiving")
 	d := flag.Int("d", -1, "Index of message deleting")
-	pend := flag.String("pend", "all", "Pending file transfers")
+	pend := flag.String("pend", "", "Pending file transfers")
 	fList := flag.String("fList", "", "Retrieve friend list")
 	return s, p, friend, r, d, pend, fList
 }
@@ -38,13 +38,11 @@ func CheckInputs(flags Flag) [2]string {
 	if flags.delete != -1 {
 		return [...]string{"d", string(flags.delete)}
 	}
-
-	if flags.pend == "all" {
-		return [...]string{"pend", "all"}
+	if len(flags.pend) != 0 {
+		return [...]string{"pend", flags.pend}
 
 	}
-
-	if flags.fList == "all" {
+	if len(flags.fList) != 0 {
 		return [...]string{"fList", flags.fList}
 	}
 	// If nothing is entered we exit the program

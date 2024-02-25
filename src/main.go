@@ -12,9 +12,7 @@ import (
 func main() {
 	database.InitializeDatabase()
 	database.HandleAccountStartup()
-	curUser := database.GetCurrentUser()
 
-	fmt.Println(curUser)
 	_, curUserName, _, _ := database.GetUserDetails()
 	fmt.Println(curUserName)
 
@@ -57,7 +55,7 @@ func main() {
 	} else if result[0] == "fList" {
 		friendList := database.GetFriendsList(curUserName)
 		for namez := range friendList {
-			fmt.Println("Friend name: %s", namez)
+			fmt.Println("Friend name: ", namez)
 		}
 	} else if len(result) == 2 { // send
 		// start daemon

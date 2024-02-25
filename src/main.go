@@ -5,7 +5,26 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
+	"syscall"
 )
+
+func execute_daemon(user_to string, filename string) {
+	// execute daemon, runs in background independent of this
+	cmd := exec.Command("go", "run", "src/daemon.go", user_to, filename)
+
+	// dont worry about this
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
+	cmd.Start()
+	syscall.Setpgid(cmd.Process.Pid, cmd.Process.Pid)
+
+	// saved pid to file
+	tt := fmt.Sprintf("%d\n", cmd.Process.Pid)
+	os.WriteFile("pid", []byte(tt), 0755)
+}
 
 // Main method for runnning the system
 func main() {
@@ -31,7 +50,7 @@ func main() {
 	if result[0] == "f" { // friend
 		friendsCode := database.GetUserFriendCode(result[1])
 		result := database.AddFriend(friendsCode, curUserName)
-		if (result == false) {
+		if result == false {
 			fmt.Print("Failed to add friend! Not found!")
 		} else {
 			fmt.Print("Use has been added!")
@@ -48,8 +67,9 @@ func main() {
 		// Delete friend using result[1]
 
 	} else if len(result) == 2 { // send
-		// database.PerformTransaction()
 		// Send file
+		// HERE WE WILL START DAEMON
+		execute_daemon(result[0], result[1])
 	} else {
 		log.Fatal("No arguments given that match anything available")
 	}

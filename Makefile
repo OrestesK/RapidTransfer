@@ -4,6 +4,9 @@ FLAGS=-ldflags "-s -w"
 build:
 	@go build ${FLAGS} -o ${BINARY_NAME} src/*.go
 
+main:
+	@go run src/main.go src/network.go src/parser.go $(ARG)
+
 server: build
 	@./${BINARY_NAME}
 

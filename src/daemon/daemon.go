@@ -1,40 +1,30 @@
 package main
 
 import (
-	"Example/src"
 	"Example/src/database"
-	"fmt"
+	"Example/src/network"
 	"os"
-	"os/exec"
-	"syscall"
 )
-
-func execute_daemon() {
-	// execute daemon, runs in background independent of this
-	cmd := exec.Command("go", "run", "src/daemon.go, ")
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Setpgid: true,
-	}
-	cmd.Start()
-	syscall.Setpgid(cmd.Process.Pid, cmd.Process.Pid)
-
-	// saved pid to file
-	tt := fmt.Sprintf("%d\n", cmd.Process.Pid)
-	os.WriteFile("pid", []byte(tt), 0755)
-}
 
 // this is the daemon
 func main() {
 	args := os.Args[1:]
-	user_from := args[0]
-	user_to := args[1]
-	file_name := args[2]
+	user_to := args[0]
+	file_name := args[1]
 
-	node := main.Initialize_node()
+	node := network.Initialize_node()
 
+	done := make(chan bool)
 	// I will computer and provide key
-	key := main.Server(node)
+	key := network.Server(node, done)
+
+	// initialize user
+	database.HandleAccountStartup()
+	_, user_from, _, _ := database.GetUserDetails()
 
 	database.PerformTransaction(user_from, user_to, key, file_name)
+
+	// wait :)
+	<-done
 
 }

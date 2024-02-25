@@ -310,6 +310,14 @@ func GetAddressFromTransactionPhrase(phrase string) string {
 	return address
 }
 
+func DeleteTransactionWithAddress(address string) {
+	conn := GetConn()
+	_, err := conn.Exec("DELETE FROM transfer WHERE address = $1;", address)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // Determines if two friends are mutual friends
 func AreMutualFriends(userName1 string, userName2 string) (areMutuals bool) {
 	areMutuals = false

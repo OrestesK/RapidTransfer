@@ -299,6 +299,17 @@ func IsFriend(userName1 string, userName2 string) (isFriend bool) {
 	return
 }
 
+func GetAddressFromTransactionPhrase(phrase string) string {
+	conn := GetConn()
+	row := conn.QueryRow("SELECT address FROM transfer WHERE keyword = $1;", phrase)
+	var address string
+	err := row.Scan(&address)
+	if err != nil {
+		panic(err)
+	}
+	return address
+}
+
 // Determines if two friends are mutual friends
 func AreMutualFriends(userName1 string, userName2 string) (areMutuals bool) {
 	areMutuals = false

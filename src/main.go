@@ -32,46 +32,48 @@ func main() {
 
 	// Checks the flags and sees which ones are used and valid for calling
 	result := CheckInputs(flags)
+	fmt.Println(result[0])
 	switch argument := result[0]; argument {
-
 	// Adds friend to your friends list, Usage -f name
-	case "f":
+	case "f": //works
 		code := result[1]
 		fmt.Println(code)
-		friendsCode := database.GetUserFriendCode(code)
-		result := database.AddFriend(friendsCode, curUserName)
+		result := database.AddFriend(code, curUserName)
 		if !result {
 			fmt.Println("Failed to add friend! Not found!")
 		} else {
-			fmt.Println("Use has been added!")
+			fmt.Println("User has been added!")
 		}
 
 	// Retrieves all of the pending transfers, Usage -pn all
-	case "pn":
+	case "pn": // Works
 		database.GetPendingTransfers(curUserName)
-	case "r":
+	case "r": // Works
 		network.Receive_file(result[1])
-
+		fmt.Println("File has been received")
 	// Deletes file inside of the inbox, usage -d index
-	case "d":
+	case "d": // Works
 		network.Fake_receive_file(result[1])
+		fmt.Println("File has been deleted")
 	// Deletes friend when given the username
-	case "df":
+	case "df": // Does not work
 		database.DeleteFriend(curUserName, result[1])
+		fmt.Println("Friend has been deleted")
 	// Retrieves the users friend list, usage -fl all
-	case "fl":
+	case "fl": // works
 		friendList := database.GetFriendsList(curUserName)
 		for _, namez := range friendList {
 			fmt.Println("Friend name: ", namez)
 		}
 
 	// Retrieves the users friend code, Usage -c self
-	case "c":
+	case "c": // works
 		fmt.Println(database.GetUserFriendCode(curUserName))
-	default:
+	default: // works
 
 		// Sending file to user, usage to_user file_path
 		network.Send_file(result[0], result[1])
+		fmt.Println("File has been sent and will be waiting to be accepted")
 	}
 
 }

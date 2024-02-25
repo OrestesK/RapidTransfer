@@ -178,11 +178,11 @@ func CreateAccount(username string, macAddress string) {
 }
 
 // Retrieves a user's freind code based on their name, which is passed in
-func GetUserFriendCode(name string) (userKey string) {
+func GetUserFriendCode(keyword string) (userKey string) {
 	conn := GetConn()
-	err := conn.QueryRow("SELECT keyword FROM users WHERE name=$1", name).Scan(&userKey)
+	err := conn.QueryRow("SELECT keyword FROM users WHERE name=$1", keyword).Scan(&userKey)
 	if err != nil {
-		fmt.Print("Failed at GetUserFriendCode")
+		panic("Failed at GetUserFriendCode")
 	}
 	return
 }
@@ -256,29 +256,25 @@ func AddFriend(friendCode string, senderName string) (success bool) {
 	row.Scan(&count)
 	if count > 0 {
 		fmt.Print("Friend is already added!")
-		return
+		return true
 	}
-
 	_, err = conn.Exec(`
-	INSERT INTO friends VALUES ($1, $2)
-	INSERT INTO friends VALUES ($3, $4)
+	INSERT INTO friends VALUES ($1, $2), ($3, $4)
 	`, senderID, friendID, friendID, senderID)
 	if err != nil {
-		fmt.Print("Failed at AddFriend 2")
+		panic(err)
 	}
 	return true
 }
 
 // Deletes a one way friendship between two users
-func DeleteFriend(senderName string, recieverName string) (deletedFriend string) {
+func DeleteFriend(senderName string, recieverName string) {
 	conn := GetConn()
-	senderId := GetUserID(senderName)
-	recieverId := GetUserID(recieverName)
-	err := conn.QueryRow("DELETE FROM friends WHERE user_to=$1, user_from=$1", senderId, recieverId).Scan(&deletedFriend)
+	_, err := conn.Exec("DELETE FROM friends WHERE friend_id=$1 AND orig_user=$2", GetUserID(senderName), GetUserID(recieverName))
 	if err != nil {
-		panic("Query failed")
+		fmt.Println("Query failed", err)
+
 	}
-	return
 }
 
 func IsFriend(userName1 string, userName2 string) (isFriend bool) {
@@ -298,7 +294,10 @@ func GetAddressFromTransactionPhrase(phrase string) string {
 	var address string
 	err := row.Scan(&address)
 	if err != nil {
-		panic(err)
+		if err == pgx.ErrNoRows {
+			fmt.Println("No results found")
+			return ""
+		}
 	}
 	return address
 }
@@ -309,7 +308,10 @@ func GetFileNameFromTransactionPhrase(phrase string) string {
 	var filename string
 	err := row.Scan(&filename)
 	if err != nil {
-		panic(err)
+		if err == pgx.ErrNoRows {
+			fmt.Println("No results found")
+			return ""
+		}
 	}
 	return filename
 }

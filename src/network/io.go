@@ -2,6 +2,8 @@ package network
 
 import (
 	"Example/src/database"
+	"fmt"
+
 	// "fmt"
 	// "os"
 	"os/exec"
@@ -27,8 +29,12 @@ func Receive_file(transaction_identifier string) {
 
 	done := make(chan bool)
 	// client
-	Client(node, address, file_name, done, false)
-	<-done
+	if len(file_name) == 0 {
+		fmt.Println("File Not found")
+	} else {
+		Client(node, address, file_name, done, false)
+		<-done
+	}
 }
 
 func Fake_receive_file(transaction_identifier string) {

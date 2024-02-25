@@ -1,6 +1,7 @@
 package network
 
 import (
+	"Example/src/database"
 	"fmt"
 	"os"
 	"os/exec"
@@ -9,7 +10,7 @@ import (
 
 func Send_file(user_to string, filename string) {
 	// execute daemon, runs in background independent of this
-	cmd := exec.Command("go", "run", "src/daemon.go", user_to, filename)
+	cmd := exec.Command("go", "run", "src/daemon/daemon.go", user_to, filename)
 
 	// dont worry about this
 	cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -24,8 +25,11 @@ func Send_file(user_to string, filename string) {
 }
 
 func Receive_file(transaction_identifier string) {
-	// node := Initialize_node()
-	// TODO
-	// database get key (big one) given transaction id (small one)
-	// Client(node)
+	node := Initialize_node()
+
+	// get big key from small key
+	address := database.GetAddressFromTransactionPhrase(transaction_identifier)
+
+	// client
+	Client(node, address)
 }

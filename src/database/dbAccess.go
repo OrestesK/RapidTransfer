@@ -321,6 +321,7 @@ func UserCanViewTransaction(userId int, phrase string) bool {
 	row := conn.QueryRow("SELECT COUNT(*) FROM transfer WHERE userfrom = $1 OR userto = $2 AND keyword = $3;", userId, userId, phrase)
 	var count int
 	err := row.Scan(&count)
+	fmt.Printf("count: %v\n", count)
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			fmt.Println("No results found")

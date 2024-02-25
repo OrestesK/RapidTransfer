@@ -320,6 +320,9 @@ func UserCanViewTransaction(userId int, phrase string) bool {
 	conn := GetConn()
 	row := conn.QueryRow("SELECT COUNT(*) FROM transfer WHERE userfrom = $1 OR userto = $2 AND keyword = $3;", userId, userId, phrase)
 	var count int
+	fmt.Printf("userId: %v\n", userId)
+	fmt.Printf("phrase: %v\n", phrase)
+	
 	err := row.Scan(&count)
 	fmt.Printf("count: %v\n", count)
 	if err != nil {

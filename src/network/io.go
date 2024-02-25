@@ -24,6 +24,7 @@ func Receive_file(transaction_identifier string) {
 	node := Initialize_node()
 
 	id, _, _, _ := database.GetUserDetails()
+	fmt.Printf("id: %v\n", id)
 	result := database.UserCanViewTransaction(id, transaction_identifier)
 	fmt.Printf("result: %v\n", result)
 	if !result {

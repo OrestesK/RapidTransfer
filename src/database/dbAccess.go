@@ -313,7 +313,7 @@ func PerformTransaction(senderName string, recieverName string, address string, 
 
 	if AreMutualFriends(senderName, recieverName) {
 		phrase := generateFriendCode()
-		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, address, filename) VALUES ($1,$2,$3,$4)", FromUserID, ToUserID, phrase, address, filename)
+		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, address, filename) VALUES ($1,$2,$3,$4,$5)", FromUserID, ToUserID, phrase, address, filename)
 		if err != nil {
 			fmt.Print("Failed at PerformTransaction")
 			panic(err)

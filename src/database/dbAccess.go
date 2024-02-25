@@ -22,7 +22,7 @@ type User struct {
 	macaddr string
 }
 
-func GetConn() *pgx.Conn {
+func GetConn() (*pgx.Conn, error) {
 	connConfig := pgx.ConnConfig{
 		Host:     "34.170.5.185",
 		Port:     5432,
@@ -34,12 +34,12 @@ func GetConn() *pgx.Conn {
 	if err != nil {
 		fmt.Print("Failed to connect")
 	}
-	return conn
+	return conn, err
 }
 
 func InitializeDatabase() {
 	fmt.Print("Hello! ")
-	var conn *pgx.Conn = GetConn()
+	conn, _ := GetConn()
 	// conn.Exec("DROP TABLE transfer; DROP TABLE users; DROP TABLE friends; DROP TABLE user;")
 
 	conn.Exec("CREATE TABLE IF NOT EXISTS transfer (id SERIAL PRIMARY KEY, userFrom INT NOT NULL, userTo INT NOT NULL, keyword VARCHAR(100), address VARCHAR(100), filename VARCHAR(100))")
@@ -48,7 +48,7 @@ func InitializeDatabase() {
 
 }
 
-func generateFriendCode() string {
+func GenerateFriendCode() string {
 	rand.Seed(time.Now().UnixNano())
 
 	// Define characters that can be part of the friend code
@@ -72,7 +72,7 @@ func GetUserDetails() (int, string, string, string) {
 }
 
 func GetPendingTransfers() {
-	conn := GetConn()
+	conn, _ := GetConn()
 	x := GetCurrentUser().id
 	rows, _ := conn.Query("SELECT * FROM transfer WHERE userTo = $1", x)
 	for rows.Next() {
@@ -103,7 +103,7 @@ func GetPendingTransfers() {
 	Called on process start. This will find the user if it exists in the database. If not, it will ask to create an account.
 */
 func HandleAccountStartup() {
-	conn := GetConn()
+	conn, _ := GetConn()
 	macAddr, erro := getMacAddress()
 	if erro != nil {
 		panic(erro)
@@ -177,6 +177,7 @@ func getMacAddress() (string, error) {
 	return "", fmt.Errorf("MAC address not found")
 }
 
+/////////////////////////////////////////////////////////////////////////////
 /*
 *
 
@@ -184,8 +185,8 @@ func getMacAddress() (string, error) {
 	MacAddr is unique to the computer, and is used on startup to indentify the pc.
 */
 func CreateAccount(username string, macAddress string) {
-	conn := GetConn()
-	code := generateFriendCode()
+	conn, _ := GetConn()
+	code := GenerateFriendCode()
 	_, err := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", username, code, macAddress)
 	if err != nil {
 		fmt.Print("Failed at CreateAccount")
@@ -194,7 +195,7 @@ func CreateAccount(username string, macAddress string) {
 
 // Retrieves a user's freind code based on their name, which is passed in
 func GetUserFriendCode(name string) (userKey string) {
-	conn := GetConn()
+	conn, _ := GetConn()
 	err := conn.QueryRow("SELECT friendCode FROM users WHERE name=$1", (name)).Scan(&userKey)
 	if err != nil {
 		fmt.Print("Failed at GetUserFriendCode")
@@ -204,7 +205,7 @@ func GetUserFriendCode(name string) (userKey string) {
 
 // Retrieves a user's id based on their name, which is passed in
 func GetUserID(name string) (userID int) {
-	conn := GetConn()
+	conn, _ := GetConn()
 	fmt.Printf("Name: %s\n", name)
 	err := conn.QueryRow("SELECT id FROM users WHERE name=$1", (name)).Scan(&userID)
 	if err != nil {
@@ -216,7 +217,7 @@ func GetUserID(name string) (userID int) {
 
 // Retrieves a user's name based on their id, which is passed in
 func GetUserNameByID(id int) (userName string) {
-	conn := GetConn()
+	conn, _ := GetConn()
 	err := conn.QueryRow("SELECT name FROM users WHERE id=$1", (id)).Scan(&userName)
 	if err != nil {
 		fmt.Print("Failed at GetUserNameByID")
@@ -227,7 +228,7 @@ func GetUserNameByID(id int) (userName string) {
 
 // Retrieves a user's name based on their friend code, which is passed in
 func GetUserNameByFriendCode(friendCode int) (userName string) {
-	conn := GetConn()
+	conn, _ := GetConn()
 	err := conn.QueryRow("SELECT name FROM user WHERE id=$1", (friendCode)).Scan(&userName)
 	if err != nil {
 		fmt.Print("Failed at GetUserNameByFriendCode")
@@ -240,7 +241,7 @@ Retrieves the names of two users who have had a transaction with eachother. This
 function does this by reading the specific keyword associated with the transaction
 */
 func GetTransaction(keyword string) (names []string) {
-	conn := GetConn()
+	conn, _ := GetConn()
 	var userFromID int
 	var userToID int
 	err := conn.QueryRow("SELECT uidFrom, uidTo FROM transaction WHERE keyword=$1", (keyword)).Scan(&userFromID, &userToID)
@@ -255,7 +256,7 @@ func GetTransaction(keyword string) (names []string) {
 
 // Adds a friend to a senders friends list based on their friend code
 func AddFriend(friendCode string, senderName string) (success bool) {
-	conn := GetConn()
+	conn, _ := GetConn()
 	var friendID int
 	fmt.Printf("friendcode: %s\n", friendCode)
 	err := conn.QueryRow("SELECT id FROM users WHERE keyword=$1;", (friendCode)).Scan(&friendID)
@@ -276,7 +277,7 @@ func AddFriend(friendCode string, senderName string) (success bool) {
 
 // Deletes a one way friendship between two users
 func DeleteFriend(senderName string, recieverName string) (deletedFriend string) {
-	conn := GetConn()
+	conn, _ := GetConn()
 	senderId := GetUserID(senderName)
 	recieverId := GetUserID(recieverName)
 	err := conn.QueryRow("DELETE FROM friends WHERE user_to=$1, user_from=$1", senderId, recieverId).Scan(&deletedFriend)
@@ -288,7 +289,7 @@ func DeleteFriend(senderName string, recieverName string) (deletedFriend string)
 
 func IsFriend(userName1 string, userName2 string) (isFriend bool) {
 	isFriend = false
-	conn := GetConn()
+	conn, _ := GetConn()
 	user1Id := GetUserID(userName1)
 	user2Id := GetUserID(userName2)
 	err1 := conn.QueryRow("SELECT id FROM friends WHERE user_from=$1, user_to=$2", user1Id, user2Id).Scan(&isFriend)
@@ -300,7 +301,7 @@ func IsFriend(userName1 string, userName2 string) (isFriend bool) {
 }
 
 func GetAddressFromTransactionPhrase(phrase string) string {
-	conn := GetConn()
+	conn, _ := GetConn()
 	row := conn.QueryRow("SELECT address FROM transfer WHERE keyword = $1;", phrase)
 	var address string
 	err := row.Scan(&address)
@@ -318,12 +319,12 @@ func AreMutualFriends(userName1 string, userName2 string) (areMutuals bool) {
 
 // Allows two users to send files to eachother
 func PerformTransaction(senderName string, recieverName string, address string, filename string) (keyword string) {
-	conn := GetConn()
+	conn, _ := GetConn()
 	FromUserID := GetUserID(senderName)
 	ToUserID := GetUserID(recieverName)
 
 	if AreMutualFriends(senderName, recieverName) {
-		phrase := generateFriendCode()
+		phrase := GenerateFriendCode()
 		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, address, filename) VALUES ($1,$2,$3,$4,$5)", FromUserID, ToUserID, phrase, address, filename)
 		if err != nil {
 			fmt.Print("Failed at PerformTransaction")
@@ -336,7 +337,7 @@ func PerformTransaction(senderName string, recieverName string, address string, 
 }
 
 func GetFriendsList(username string) (friendsList []string) {
-	conn := GetConn()
+	conn, _ := GetConn()
 	userId := GetUserID(username)
 	var idList []int
 	err := conn.QueryRow("SELECT friend_id FROM friends WHERE orig_user=$1", userId).Scan(&idList)

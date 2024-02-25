@@ -26,7 +26,7 @@ func main() {
 		friend:  *friend,
 		recieve: *r,
 		delete:  *d,
-		pend: *pend,
+		pend:    *pend,
 	}
 
 	result := CheckInputs(flags)
@@ -41,7 +41,7 @@ func main() {
 
 	} else if result[0] == "pend" {
 		database.GetPendingTransfers()
-	}else if result[0] == "r" { // retrieve
+	} else if result[0] == "r" { // retrieve
 
 		// Receive message using result[1]
 		transaction_identifier := "abcd 123"

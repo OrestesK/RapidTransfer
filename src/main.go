@@ -28,7 +28,6 @@ func main() {
 	}
 
 	result := CheckInputs(flags)
-	fmt.Println(result[0], result[1])
 	switch argument := result[0]; argument {
 	case "f":
 		code := result[1]
@@ -36,16 +35,13 @@ func main() {
 		friendsCode := database.GetUserFriendCode(code)
 		result := database.AddFriend(friendsCode, curUserName)
 		if !result {
-			fmt.Print("Failed to add friend! Not found!")
+			fmt.Println("Failed to add friend! Not found!")
 		} else {
-			fmt.Print("Use has been added!")
+			fmt.Println("Use has been added!")
 		}
 
 	case "pn":
-		database.GetPendingTransfers()
-		friends := database.GetFriendsList(curUserName)
-		fmt.Printf("friends: %v\n", friends)
-
+		database.GetPendingTransfers(curUserName)
 	case "r":
 		network.Receive_file(result[1])
 

@@ -5,15 +5,16 @@ import (
 	"encoding/binary"
 	"fmt"
 
+	"io/fs"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
-	"io/fs"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 const protocolID = "RapidTransfer" // this is just a unique id, can be whatever, keeps the heckers away
@@ -55,7 +56,7 @@ func Client(node host.Host, peerAddr string, file_name string, done chan bool) {
 	if err := node.Connect(context.Background(), *peerAddrInfo); err != nil {
 		panic(err)
 	}
-	fmt.Println("Connected to", peerAddrInfo.String())
+	// fmt.Println("Connected to", peerAddrInfo.String())
 
 	// Create a stream with peer
 	s, err := node.NewStream(context.Background(), peerAddrInfo.ID, protocolID)

@@ -175,7 +175,7 @@ func GetUserID(name string) (userID int) {
 // Retrieves a user's name based on their id, which is passed in
 func GetUserNameByID(id int) (userName string) {
 	conn := GetConn()
-	err := conn.QueryRow("SELECT name FROM user WHERE id=%s", (id)).Scan(&userName)
+	err := conn.QueryRow("SELECT name FROM user WHERE id=$1", (id)).Scan(&userName)
 	if err != nil {
 		fmt.Println("Query failed")
 	}
@@ -185,7 +185,7 @@ func GetUserNameByID(id int) (userName string) {
 // Retrieves a user's name based on their friend code, which is passed in
 func GetUserNameByFriendCode(friendCode int) (userName string) {
 	conn := GetConn()
-	err := conn.QueryRow("SELECT name FROM user WHERE id=%s", (friendCode)).Scan(&userName)
+	err := conn.QueryRow("SELECT name FROM user WHERE id=$1", (friendCode)).Scan(&userName)
 	if err != nil {
 		fmt.Println("Query failed")
 	}
@@ -200,7 +200,7 @@ func GetTransaction(keyword string) (names []string) {
 	conn := GetConn()
 	var userFromID int
 	var userToID int
-	err := conn.QueryRow("SELECT uidFrom, uidTo FROM transaction WHERE keyword=%s", (keyword)).Scan(&userFromID, &userToID)
+	err := conn.QueryRow("SELECT uidFrom, uidTo FROM transaction WHERE keyword=$1", (keyword)).Scan(&userFromID, &userToID)
 	if err != nil {
 		fmt.Println("Query failed")
 	}
@@ -214,12 +214,12 @@ func GetTransaction(keyword string) (names []string) {
 func AddFriend(friendCode string, senderName string) (friendName string) {
 	conn := GetConn()
 	var friendID int
-	err := conn.QueryRow("SELECT id FROM user WHERE friendCode=%s", (friendCode)).Scan(&friendID)
+	err := conn.QueryRow("SELECT id FROM user WHERE friendCode=$1", (friendCode)).Scan(&friendID)
 	if err != nil {
 		fmt.Println("Query failed")
 	}
 	senderID := GetUserID(senderName)
-	err2 := conn.QueryRow("INSERT INTO friends VALUES (%s,%s)", senderID, friendID)
+	err2 := conn.QueryRow("INSERT INTO friends VALUES ($1,$2)", senderID, friendID)
 	if err2 != nil {
 		fmt.Println("Query failed")
 	}
@@ -232,7 +232,7 @@ func DeleteFriend(senderName, recieverName string) (deletedFriend string) {
 	conn := GetConn()
 	senderId := GetUserID(senderName)
 	recieverId := GetUserID(recieverName)
-	err := conn.QueryRow("DELETE FROM friends WHERE user_to=%s, user_from=%s", senderId, recieverId).Scan(&deletedFriend)
+	err := conn.QueryRow("DELETE FROM friends WHERE user_to=$1, user_from=$1", senderId, recieverId).Scan(&deletedFriend)
 	if err != nil {
 		fmt.Println("Query failed")
 	}
@@ -244,7 +244,7 @@ func IsFriend(userName1, userName2 string) (isFriend bool) {
 	conn := GetConn()
 	user1Id := GetUserID(userName1)
 	user2Id := GetUserID(userName2)
-	err1 := conn.QueryRow("SELECT id FROM friends WHERE user_from=%s, user_to=%s", user1Id, user2Id).Scan(&isFriend)
+	err1 := conn.QueryRow("SELECT id FROM friends WHERE user_from=$1, user_to=$2", user1Id, user2Id).Scan(&isFriend)
 	if err1 != nil {
 		isFriend = true
 		return
@@ -271,7 +271,7 @@ func PerformTransaction(senderName, recieverName string) (keyword string) {
 	ToUserID := GetUserID(recieverName)
 	if AreMutualFriends(senderName, recieverName) {
 		keyword = generateFriendCode()
-		err := conn.QueryRow("INSERT INTO transfer VALUES (%s,%s,%s)", FromUserID, ToUserID, keyword)
+		_, err := conn.Exec("INSERT INTO transfer VALUES ($1,$2,$3)", FromUserID, ToUserID, keyword)
 		if err != nil {
 			fmt.Println("Query failed")
 		}

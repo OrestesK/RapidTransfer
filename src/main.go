@@ -11,6 +11,10 @@ import (
 func main() {
 	database.InitializeDatabase()
 	database.HandleAccountStartup()
+	curUser := database.GetCurrentUser()
+	fmt.Println(curUser)
+	_, curUserName, _, _ := database.GetUserDetails()
+	fmt.Println(curUserName)
 
 	s, p, friend, r, d := InitFlags()
 	flag.Parse()
@@ -24,8 +28,9 @@ func main() {
 
 	result := CheckInputs(flags)
 	if result[0] == "f" { // friend
+		friendsCode := database.GetUserFriendCode(result[1])
+		database.AddFriend(friendsCode, curUserName)
 
-		// Add friend using result[1]
 	} else if result[0] == "r" { // retrieve
 
 		// index, _ := strconv.Atoi(result[1])

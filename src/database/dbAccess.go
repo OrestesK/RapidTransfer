@@ -153,7 +153,7 @@ func CreateAccount(username string, macAddress string) {
 }
 
 // Retrieves a user's freind code based on their name, which is passed in
-func GetUserFriendCode(name string) (userKey int) {
+func GetUserFriendCode(name string) (userKey string) {
 	conn := GetConn()
 	err := conn.QueryRow("SELECT friendCode FROM users WHERE name=$1", (name)).Scan(&userKey)
 	if err != nil {

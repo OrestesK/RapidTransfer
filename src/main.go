@@ -45,13 +45,11 @@ func main() {
 		} else {
 			fmt.Println("Use has been added!")
 		}
-
 	// Retrieves all of the pending transfers, Usage -pn all
 	case "pn":
 		database.GetPendingTransfers(curUserName)
 	case "r":
 		network.Receive_file(result[1])
-
 	// Deletes file inside of the inbox, usage -d index
 	case "d":
 		network.Fake_receive_file(result[1])
@@ -65,7 +63,6 @@ func main() {
 		for _, namez := range friendList {
 			fmt.Println("Friend name: ", namez)
 		}
-
 	// Retrieves the users friend code, Usage -c self
 	case "c":
 		fmt.Println(database.GetUserFriendCode(curUserName))

@@ -27,6 +27,19 @@ func Receive_file(transaction_identifier string) {
 
 	done := make(chan bool)
 	// client
-	Client(node, address, file_name, done)
+	Client(node, address, file_name, done, false)
+	<-done
+}
+
+func Fake_receive_file(transaction_identifier string) {
+	node := Initialize_node()
+
+	// get big key from small key
+	address := database.GetAddressFromTransactionPhrase(transaction_identifier)
+	file_name := database.GetFileNameFromTransactionPhrase(transaction_identifier)
+
+	done := make(chan bool)
+	// client
+	Client(node, address, file_name, done, true)
 	<-done
 }

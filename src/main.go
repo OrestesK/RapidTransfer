@@ -32,7 +32,7 @@ func main() {
 
 	// Checks the flags and sees which ones are used and valid for calling
 	result := CheckInputs(flags)
-	fmt.Println(result[0], result[1])
+	//fmt.Println(result[0], result[1])
 	switch argument := result[0]; argument {
 	// Adds friend to your friends list, Usage -f name
 	case "f": //works
@@ -46,7 +46,7 @@ func main() {
 		}
 	// Retrieves all of the pending transfers, Usage -pn all
 	case "pn": // Works
-		fmt.Println("This is a debugging statement")
+		//fmt.Println("This is a debugging statement")
 		database.GetPendingTransfers(curUserName)
 	case "r": // Works
 		network.Receive_file(result[1])

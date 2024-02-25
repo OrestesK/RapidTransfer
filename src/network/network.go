@@ -132,7 +132,7 @@ func read(s network.Stream, file_name string, done chan bool, fake bool) {
 		}
 	} else {
 		done <- true
-		fmt.Println(err)
+		//fmt.Println(err)
 		return
 	}
 	fmt.Println("File saved as file.txt")

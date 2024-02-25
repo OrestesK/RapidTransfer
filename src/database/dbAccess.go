@@ -84,6 +84,7 @@ func GetPendingTransfers(username string) {
 			fmt.Println("Error scanning row:", err)
 			break
 		}
+		fmt.Printf("From: %s Keyword: %s Filename : %s\n", host, keyword, filename)
 
 	}
 

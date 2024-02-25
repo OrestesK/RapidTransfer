@@ -366,7 +366,7 @@ func GetFriendsList(username string) (friendsList []string) {
 	conn := GetConn()
 	userId := GetUserID(username)
 
-	rows, err := conn.Query(`
+	conn.QueryRow(`
 	
 	SELECT ARRAY_AGG(users.name)
 	FROM users 
@@ -374,22 +374,7 @@ func GetFriendsList(username string) (friendsList []string) {
 	INNER JOIN friends ON friends.friend_id=users.id
 	WHERE orig_user=$1 
 	
-	GROUP BY friends.orig_user`, userId)
-	if err != nil {
-		panic(err)
-	}
-<<<<<<< HEAD
-	defer rows.Close() // Close the rows at the end of the function
-
-	return friendsList
-=======
-	for rows.Next() {
-		rows.Scan(&friendId)
-		friendUser := GetUserNameByID(friendId)
-		println(friendUser)
-		friendsList = append(friendsList, friendUser)
-	}
-
+	GROUP BY friends.orig_user`, userId).Scan(&friendsList)
+	fmt.Println(friendsList)
 	return
->>>>>>> 3c851e3088db5eeb85ee13c1da1569e3fec4c084
 }

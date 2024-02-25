@@ -52,7 +52,7 @@ func main() {
 
 	case "fl":
 		friendList := database.GetFriendsList(curUserName)
-		for namez := range friendList {
+		for _, namez := range friendList {
 			fmt.Println("Friend name: ", namez)
 		}
 	default:

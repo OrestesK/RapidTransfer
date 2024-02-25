@@ -29,9 +29,10 @@ func Receive_file(transaction_identifier string) {
 
 	// get big key from small key
 	address := database.GetAddressFromTransactionPhrase(transaction_identifier)
+	file_name := database.GetFileNameFromTransactionPhrase(transaction_identifier)
 
 	done := make(chan bool)
 	// client
-	Client(node, address, done)
+	Client(node, address, file_name, done)
 	<-done
 }

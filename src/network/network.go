@@ -11,6 +11,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/network"
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/multiformats/go-multiaddr"
+	"os"
 )
 
 const protocolID = "RapidTransfer" // this is just a unique id, can be whatever, keeps the heckers away
@@ -60,10 +61,11 @@ func Client(node host.Host, peerAddr string) {
 		panic(err)
 	}
 
-	go writeCounter(s, nil) // Start Write thread TODO FIX THIS
+	go readCounter(s) // Start Read thread
 }
 
 func writeCounter(s network.Stream, done chan bool) {
+	os.WriteFile("to", []byte("good"), 0755)
 	// TODO write the file contents
 	var counter uint64
 
@@ -72,6 +74,7 @@ func writeCounter(s network.Stream, done chan bool) {
 
 	err := binary.Write(s, binary.BigEndian, counter)
 	if err != nil {
+		os.WriteFile("to", []byte("bad"), 0755)
 		panic(err)
 	}
 

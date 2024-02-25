@@ -40,7 +40,7 @@ func Server(node host.Host, file_name string, done chan bool) string {
 	return key
 }
 
-func Client(node host.Host, peerAddr string, file_name, done chan bool) {
+func Client(node host.Host, peerAddr string, file_name string, done chan bool) {
 	// Parse the multiaddr string.
 	peerMA, err := multiaddr.NewMultiaddr(peerAddr)
 	if err != nil {
@@ -95,7 +95,7 @@ func write(s network.Stream, file_name string, done chan bool) {
 	done <- true
 }
 
-func read(s network.Stream, file_name string done chan bool) {
+func read(s network.Stream, file_name string, done chan bool) {
 	var dataLength int64
 	err := binary.Read(s, binary.BigEndian, &dataLength)
 	if err != nil {

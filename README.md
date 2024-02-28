@@ -2,18 +2,18 @@
 
 Rapid Transfer System is a simple system for transferring files between users using Go and a PostgreSQL database.
 
-## Table of Contents
+## Future Features
 
-- [Overview](#overview)
-- [Features](#features)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Usage](#usage)
-  - [Command Line Flags](#command-line-flags)
-  - [Examples](#examples)
-- [Contributing](#contributing)
-- [License](#license)
+- Auto ziping folders
+- Imroving file pathing
+- changing arg parsing to accept no defaults
+- Improvement of SQL usage, increase efficiency 
+- move away from mac addresses and into password authentication
+- hash information
+- able to send files from anywhere
+- choose where files are recieved
+- more documentation on how it works
+- better error handling
 
 ## Overview
 
@@ -66,32 +66,19 @@ Command Line Flags
 Examples
 Send a File:
 
-bash
-
 ./rapid-transfer-system -s filename.txt --friend friend_username
 
 Receive a File:
-
-bash
 
 ./rapid-transfer-system -r filename.txt
 
 View Pending Transfers:
 
-bash
-
 ./rapid-transfer-system --pend
 
 Delete a Friend:
 
-bash
-
 ./rapid-transfer-system -d friend_username
-
-Contributing
-
-Contributions are welcome! If you find any issues or have suggestions, please open an issue or create a pull request.
-License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 

@@ -11,7 +11,6 @@ CREATE TABLE user (
 
 CREATE TABLE friends(
     id SERIAL INT PRIMARY KEY,
-    -- 
     user_from INT REFERENCES user,
     user_to INT REFERENCES user,
 )

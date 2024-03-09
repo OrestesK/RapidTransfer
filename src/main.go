@@ -78,3 +78,10 @@ func main() {
 	}
 
 }
+
+/*
+func main() {
+	text := database.HashString("Hello")
+	print(text)
+}
+*/

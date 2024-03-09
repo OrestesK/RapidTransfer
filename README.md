@@ -7,9 +7,9 @@ Rapid Transfer System is a simple system for transferring files between users us
 - Auto ziping folders
 - Imroving file pathing
 - changing arg parsing to accept no defaults
-- Improvement of SQL usage, increase efficiency 
-- move away from mac addresses and into password authentication
-- hash information
+- ~~Improvement of SQL usage, increase efficiency~~
+- ~~move away from mac addresses and into password authentication~~
+- ~~hash information~~
 - able to send files from anywhere
 - choose where files are recieved
 - more documentation on how it works

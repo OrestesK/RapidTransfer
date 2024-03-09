@@ -1,7 +1,7 @@
 package network
 
 import (
-	"Example/src/database"
+	"Rapid/src/database"
 	"fmt"
 
 	// "fmt"

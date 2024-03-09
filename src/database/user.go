@@ -2,7 +2,6 @@ package database
 
 import (
 	"crypto/sha256"
-	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"math/rand"
@@ -76,6 +75,8 @@ func HashString(text string) string {
 * Called on process start. This will find the user if it exists in the database. If not, it will ask to create an account.
  */
 func HandleAccountStartup() {
+	// Inits all the information
+	var name, password string
 
 	// Gets the mac address
 	macAddr, _ := getMacAddress()
@@ -84,48 +85,40 @@ func HandleAccountStartup() {
 	macAddr = HashString(macAddr)
 
 	// searches for user using the hashed mac address
-	row := conn.QueryRow("SELECT * FROM users WHERE macaddr = $1", macAddr)
+	row := conn.QueryRow("SELECT id FROM users WHERE macaddr = $1", macAddr)
 
-	var id int
-	var name, keyword string
-	var macaddr string
+	id := -1
 
 	// Scans values into the variables
-	err := row.Scan(&id, &name, &keyword, &macaddr)
+	row.Scan(&id)
 
-	if err != nil {
-		if err == sql.ErrNoRows {
-			fmt.Print("Error no row found for mac address!")
-		}
-	}
-
-	// Checks for empty username
-	if len(name) == 0 {
+	// If there is no macaddr then we have a new user
+	if id == -1 {
 		// Prompt user for inputs
-		fmt.Print("You appear to be a new user!\nEnter your username to get started: ")
+		fmt.Print("Enter your username and password to get started:\nExpected: username password\n")
 		_, err := fmt.Scan(&name)
+		_, err = fmt.Scan(&password)
 		if err != nil {
 			os.Exit(1)
 		}
 
+		// Hash the password when saving it to the database
+		password = HashString(password)
+
 		// Creates account using the hashed mac addresss and username that the user defined
-		CreateAccount(name, macAddr)
-		fmt.Print("Creating account!\n\n")
-		currentUser = &User{
-			id:      1,
-			name:    name,
-			keyword: keyword,
-			macaddr: macaddr,
-		}
+		createAccount(name, password, macAddr)
+		getInformation(name, password, macAddr)
 
 	} else {
-		fmt.Printf("You already exist! Logging you in as %s!\n\n", name)
-		currentUser = &User{
-			id:      1,
-			name:    name,
-			keyword: keyword,
-			macaddr: macaddr,
+		fmt.Printf("An account exists on this device. Provide your username and password. Expected: username password\n")
+		_, err := fmt.Scan(&name)
+		_, err = fmt.Scan(&password)
+		if err != nil {
+			os.Exit(1)
 		}
+
+		password = HashString(password)
+		getInformation(name, password, macAddr)
 	}
 }
 
@@ -153,20 +146,18 @@ func getMacAddress() (string, error) {
 }
 
 /*
-*
-
-	Creates an account in the database with specifid username/macaddr.
-	MacAddr is unique to the computer, and is used on startup to indentify the pc.
+Creates an account in the database with specifid username/macaddr.
+MacAddr is unique to the computer, and is used on startup to indentify the pc.
 */
-func CreateAccount(username string, macAddress string) {
+func createAccount(username string, password string, macAddress string) {
 
 	// Creates the friend code so that this user can be added as a friend
 	code := generateFriendCode()
 
 	// Inserts that data inside of the datbase
-	_, err := conn.Exec("INSERT INTO users (name, keyword, macaddr) VALUES ($1, $2, $3)", username, code, macAddress)
+	_, err := conn.Exec("INSERT INTO users (name, password, keyword, macaddr) VALUES ($1, $2, $3, $4)", username, password, code, macAddress)
 	if err != nil {
-		fmt.Printf("Failed at CreateAccount: %s", err)
+		fmt.Printf("Failed to create account", err)
 	}
 }
 
@@ -187,4 +178,26 @@ func GetUserID(name string) (userID int) {
 		return -1
 	}
 	return
+}
+
+func getInformation(name string, password string, macAddr string) {
+	var id int
+	var keyword string
+	row := conn.QueryRow(
+		`SELECT id, name, keyword, macaddr 
+		FROM users 
+		WHERE name=$1 AND password=$2 AND macaddr=$3`, name, password, macAddr)
+
+	err := row.Scan(&id, &name, &keyword, &macAddr)
+
+	if err != nil {
+		fmt.Print("Username or password is wrong\n", err)
+	}
+
+	currentUser = &User{
+		id:      id,
+		name:    name,
+		keyword: keyword,
+		macaddr: macAddr,
+	}
 }

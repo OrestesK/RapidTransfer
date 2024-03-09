@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS transfer
 CREATE TABLE IF NOT EXISTS users 
 (
     id SERIAL PRIMARY KEY, 
-    name VARCHAR(100) NOT NULL UNIQUE, 
+    name VARCHAR(100) NOT NULL,
+    password VARCHAR(100) NOT NULL,
     keyword VARCHAR(100), 
     macaddr VARCHAR(100)
 );

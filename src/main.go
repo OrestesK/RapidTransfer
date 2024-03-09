@@ -12,7 +12,8 @@ func main() {
 	database.InitializeDatabase()
 	database.HandleAccountStartup()
 
-	_, curUserName, _, _ := database.GetUserDetails()
+	_, curUserName, code, _ := database.GetUserDetails()
+	fmt.Printf("Currently Logged in as %s wih the friendcode %s\n", curUserName, code)
 	// Retrieves the flags from the init
 	s, p, f, r, d, pn, fl, c, df := InitFlags()
 	flag.Parse()

@@ -2,13 +2,14 @@ package database
 
 import (
 	"fmt"
+	"log"
 )
 
 // GetUserNameByFriendCode retrieves a user's name based on their friend code.
 func GetUserNameByFriendCode(friendCode string) (userName string) {
 	err := conn.QueryRow("SELECT name FROM user WHERE id=$1", friendCode).Scan(&userName)
 	if err != nil {
-		fmt.Print("Failed at GetUserNameByFriendCode")
+		log.Fatal(err)
 	}
 	return
 }
@@ -20,7 +21,7 @@ func AddFriend(friendCode string, senderName string) (success bool) {
 	err := conn.QueryRow("SELECT id FROM users WHERE keyword=$1;", friendCode).Scan(&friendID)
 	fmt.Printf("FriendID From Code: %d\n", friendID)
 	if err != nil {
-		fmt.Print("Failed at AddFriend")
+		log.Fatal(err)
 		return false
 	}
 	senderID := GetUserID(senderName)

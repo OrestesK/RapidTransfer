@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/jackc/pgx"
 )
@@ -25,13 +26,31 @@ func GetConn() *pgx.Conn {
 // Creates a public connection that all functions can use
 var conn *pgx.Conn = GetConn()
 
+// Executes returns str of .sql file when given the path
+func execSQLFile(filename string) error {
+	// Read the content of the SQL file
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
+
+	// Execute the SQL queries
+	_, err = conn.Exec(string(content))
+	if err != nil {
+		return err
+	}
+
+}
+
 // Inits all of the tables for the database
 func InitializeDatabase() {
+	const path = "database.sql"
 
-	conn.Exec(`
-	CREATE TABLE IF NOT EXISTS transfer (id SERIAL PRIMARY KEY, userFrom INT NOT NULL, userTo INT NOT NULL, keyword VARCHAR(100), address VARCHAR(100), filename VARCHAR(100));
-	CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL UNIQUE, keyword VARCHAR(100), macaddr VARCHAR(100));
-	CREATE TABLE IF NOT EXISTS friends (orig_user INT NOT NULL, friend_id INT NOT NULL, total_transfers INT NOT NULL DEFAULT 0);
-	`)
+	err := execSQLFile(path)
+
+	if err != nil {
+		fmt.Println("Error opening database:", err)
+		os.Exit(1)
+	}
 
 }

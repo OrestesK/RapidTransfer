@@ -1,8 +1,8 @@
 package main
 
 import (
-	"Example/src/database"
-	"Example/src/network"
+	"Rapid/src/database"
+	"Rapid/src/network"
 	"os"
 )
 

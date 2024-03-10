@@ -3,10 +3,12 @@ package database
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/rand"
 	"net"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -77,49 +79,41 @@ func HashString(text string) string {
 func HandleAccountStartup() {
 	// Inits all the information
 	var name, password string
-
 	// Gets the mac address
 	macAddr, _ := getMacAddress()
 
 	// Hashes that mac address to compare
 	macAddr = HashString(macAddr)
 
-	// searches for user using the hashed mac address
-	row := conn.QueryRow("SELECT id FROM users WHERE macaddr = $1", macAddr)
+	fmt.Print("Enter your username and password to login or create to create a new user\nExpected: username password or create\n")
 
-	id := -1
-
-	// Scans values into the variables
-	row.Scan(&id)
-
-	// If there is no macaddr then we have a new user
-	if id == -1 {
-		// Prompt user for inputs
-		fmt.Print("Enter your username and password to get started:\nExpected: username password\n")
+	// May look weird but it does check if the input was create and if it isnt, just stores the username
+	_, err := fmt.Scan(&name)
+	if strings.Compare(name, "create") == 0 {
+		// User entered create
+		fmt.Println("You have decided to create a user, if you have other users they will still be accesible")
+		fmt.Println("Enter your username and password to get started\nExpected: username password")
 		_, err := fmt.Scan(&name)
 		_, err = fmt.Scan(&password)
+
+		// Checks to make sure we cannot create multiple users on the same device with the same name
+		for alreadyExistsCheck(name, macAddr) != -1 {
+			fmt.Println("Duplicate creation of user on one machine caught. Change username to procceed")
+			_, err = fmt.Scan(&name)
+		}
 		if err != nil {
 			os.Exit(1)
 		}
-
-		// Hash the password when saving it to the database
 		password = HashString(password)
-
-		// Creates account using the hashed mac addresss and username that the user defined
 		createAccount(name, password, macAddr)
-		getInformation(name, password, macAddr)
-
 	} else {
-		fmt.Printf("An account exists on this device. Provide your username and password. Expected: username password\n")
-		_, err := fmt.Scan(&name)
 		_, err = fmt.Scan(&password)
+		password = HashString(password)
 		if err != nil {
 			os.Exit(1)
 		}
-
-		password = HashString(password)
-		getInformation(name, password, macAddr)
 	}
+	getInformation(name, password, macAddr)
 }
 
 func GetCurrentUser() User {
@@ -174,13 +168,20 @@ func GetUserFriendCode(keyword string) (userKey string) {
 func GetUserID(name string) (userID int) {
 	err := conn.QueryRow("SELECT id FROM users WHERE name=$1", name).Scan(&userID)
 	if err != nil {
-		fmt.Print("Failed at GetUserID")
 		return -1
 	}
 	return
 }
 
-func getInformation(name string, password string, macAddr string) {
+// Retrieves a user's id based on their name, which is passed in
+func alreadyExistsCheck(name string, macAddr string) (userID int) {
+	err := conn.QueryRow("SELECT id FROM users WHERE name=$1 AND macaddr=$2", name, macAddr).Scan(&userID)
+	if err != nil {
+		return -1
+	}
+	return
+}
+func getInformation(name string, password string, macAddr string) error {
 	var id int
 	var keyword string
 	row := conn.QueryRow(
@@ -191,7 +192,7 @@ func getInformation(name string, password string, macAddr string) {
 	err := row.Scan(&id, &name, &keyword, &macAddr)
 
 	if err != nil {
-		fmt.Print("Username or password is wrong\n", err)
+		return errors.New("Username or password is wrong\n")
 	}
 
 	currentUser = &User{
@@ -200,4 +201,5 @@ func getInformation(name string, password string, macAddr string) {
 		keyword: keyword,
 		macaddr: macAddr,
 	}
+	return nil
 }

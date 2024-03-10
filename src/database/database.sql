@@ -22,5 +22,4 @@ CREATE TABLE IF NOT EXISTS friends
 (
     orig_user INT NOT NULL, 
     friend_id INT NOT NULL, 
-    total_transfers INT NOT NULL DEFAULT 0
 );

@@ -5,7 +5,10 @@ import (
 	"Rapid/src/network"
 	"fmt"
 	"log"
+	"os"
 	"strings"
+
+	"github.com/olekukonko/tablewriter"
 )
 
 // Help command to list information about what you can run
@@ -115,9 +118,17 @@ func command(flags []Flag, user string) {
 			fmt.Println("File has been received")
 		case "-friends":
 			friendList := database.GetFriendsList(user)
-			for _, name := range friendList {
-				fmt.Println("Friend name: ", name)
+
+			// Creats cool table to display info with
+			table := tablewriter.NewWriter(os.Stdout)
+			table.SetHeader([]string{"Name", "Friend Code"})
+			table.SetCenterSeparator("|")
+			for _, v := range friendList {
+				table.Append(v)
 			}
+
+			// Prints that information
+			table.Render()
 			fmt.Println("Friends list has been displayed")
 		case "-info":
 			fmt.Printf("Username: %s, Friend_ID: %s\n", user, database.GetUserFriendCode(user))

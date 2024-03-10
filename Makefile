@@ -1,4 +1,4 @@
-BINARY_NAME= bin/RapidTransfer
+BINARY_NAME=RapidTransfer
 FLAGS=-ldflags "-s -w"
 
 build:
@@ -6,12 +6,6 @@ build:
 
 main:
 	@go run src/main.go src/network.go src/parser.go $(ARG)
-
-server: build
-	@./${BINARY_NAME}
-
-client: build
-	@./${BINARY_NAME} -p $(key)
 
 clean:
 	@go clean

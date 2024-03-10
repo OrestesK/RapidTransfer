@@ -12,8 +12,8 @@ Rapid Transfer System is a simple system for transferring files between users us
 - ~~hash information~~
 - able to send files from anywhere
 - choose where files are recieved
-- more documentation on how it works
-- better error handling
+- ~~more documentation on how it works~~
+- ~~better error handling~~
 
 ## Overview
 

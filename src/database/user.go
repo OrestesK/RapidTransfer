@@ -3,7 +3,9 @@ package database
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -111,14 +113,15 @@ func HandleAccountStartup() {
 
 	} else {
 		fmt.Printf("An account exists on this device. Provide your username and password. Expected: username password\n")
-		_, err := fmt.Scan(&name)
-		_, err = fmt.Scan(&password)
-		if err != nil {
-			os.Exit(1)
-		}
+		// Should always succeed
+		fmt.Scan(&name)
+		fmt.Scan(&password)
 
 		password = HashString(password)
-		getInformation(name, password, macAddr)
+		err := getInformation(name, password, macAddr)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -180,7 +183,7 @@ func GetUserID(name string) (userID int) {
 	return
 }
 
-func getInformation(name string, password string, macAddr string) {
+func getInformation(name string, password string, macAddr string) error {
 	var id int
 	var keyword string
 	row := conn.QueryRow(
@@ -191,7 +194,7 @@ func getInformation(name string, password string, macAddr string) {
 	err := row.Scan(&id, &name, &keyword, &macAddr)
 
 	if err != nil {
-		fmt.Print("Username or password is wrong\n", err)
+		return errors.New("Username or password is wrong\n")
 	}
 
 	currentUser = &User{
@@ -200,4 +203,5 @@ func getInformation(name string, password string, macAddr string) {
 		keyword: keyword,
 		macaddr: macAddr,
 	}
+	return nil
 }

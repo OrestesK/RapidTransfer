@@ -68,12 +68,12 @@ func AreMutualFriends(userName1 string, userName2 string) (areMutuals bool) {
 }
 
 // GetFriendsList retrieves a list of friends for a given user.
-func GetFriendsList(username string) (friendsList []string) {
+func GetFriendsList(username string) (friendsList [][]string) {
 	userId := GetUserID(username)
 
 	conn.QueryRow(`
 	
-	SELECT ARRAY_AGG(users.name)
+	SELECT ARRAY_AGG(name), ARRAY_AGG(keyword)
 	FROM users 
 	
 	INNER JOIN friends ON friends.friend_id=users.id

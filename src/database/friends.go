@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 )
@@ -15,70 +16,74 @@ func GetUserNameByFriendCode(friendCode string) (userName string) {
 }
 
 // AddFriend adds a friend to a sender's friends list based on their friend code.
-func AddFriend(friendCode string, senderName string) (success bool) {
-	var friendID int
-	fmt.Printf("friendcode: %s\n", friendCode)
-	err := conn.QueryRow("SELECT id FROM users WHERE keyword=$1;", friendCode).Scan(&friendID)
-	fmt.Printf("FriendID From Code: %d\n", friendID)
-	if err != nil {
-		log.Fatal(err)
-		return false
-	}
-	senderID := GetUserID(senderName)
+func AddFriend(friendCode string, senderName string) {
+	var to_friend_id int
+	var friend_name string
+	// Finds the friend code
+	err := conn.QueryRow("SELECT id, name FROM users WHERE friend_code=$1;", friendCode).Scan(&to_friend_id, &friend_name)
 
-	row := conn.QueryRow("SELECT COUNT(*) FROM friends WHERE orig_user = $1 AND friend_id = $2", senderID, friendID)
-	var count int
-	row.Scan(&count)
-	if count > 0 {
-		fmt.Print("Friend is already added!")
-		return true
-	}
-	_, err = conn.Exec(`
-	INSERT INTO friends VALUES ($1, $2), ($3, $4)
-	`, senderID, friendID, friendID, senderID)
+	// Throws error if user does not exist
 	if err != nil {
-		panic(err)
+		if err == sql.ErrNoRows {
+			log.Printf("User with the friend code %s does not exist.\n", friendCode)
+		}
 	}
-	return true
+
+	from_user_id := GetUserID(senderName)
+
+	isFriend := AreMutualFriends(from_user_id, to_friend_id)
+	if isFriend {
+		log.Printf("User %s has already been added.\n", friend_name)
+	} else {
+		// New user is added
+		_, err = conn.Exec(`
+	INSERT INTO friends (user_one, user_two) VALUES ($1, $2)
+	`, from_user_id, to_friend_id)
+		if err != nil {
+			log.Printf("Error %s has occured.\n", err)
+		}
+	}
+
 }
 
 // DeleteFriend deletes a one-way friendship between two users.
 func DeleteFriend(senderName string, recieverName string) {
-	_, err := conn.Exec("DELETE FROM friends WHERE orig_user=$1 AND friend_id=$2", GetUserID(senderName), GetUserID(recieverName))
+	_, err := conn.Exec("DELETE FROM friends WHERE user_one=$1 AND user_two=$2", GetUserID(senderName), GetUserID(recieverName))
 	if err != nil {
 		fmt.Println("Query failed", err)
 	}
 }
 
 // IsFriend checks if there is a friendship between two users.
-func IsFriend(userName1 string, userName2 string) (isFriend bool) {
-	isFriend = false
-	err1 := conn.QueryRow("SELECT id FROM friends WHERE user_from=$1, user_to=$2", GetUserID(userName1), GetUserID(userName2)).Scan(&isFriend)
-	if err1 != nil {
-		isFriend = true
-		return
+func IsFriend(user_one_id int, user_two_id int) bool {
+	row := conn.QueryRow(`
+	SELECT id 
+	FROM friends 
+	INNER JOIN users ON friends.user_one=users.id AND friends.user_two=users.id 
+	WHERE user_from=$1 
+	AND user_to=$2`, user_one_id, user_two_id)
+	if row.Scan() == sql.ErrNoRows {
+		return false
 	}
-	return
+	return true
 }
 
 // AreMutualFriends determines if two friends are mutual friends.
-func AreMutualFriends(userName1 string, userName2 string) (areMutuals bool) {
-	areMutuals = false
-	return IsFriend(userName1, userName2) && IsFriend(userName2, userName1)
+func AreMutualFriends(user_one_id int, user_two_id int) bool {
+	return IsFriend(user_one_id, user_two_id) || IsFriend(user_two_id, user_one_id)
 }
 
 // GetFriendsList retrieves a list of friends for a given user.
-func GetFriendsList(username string) (friendsList [][]string) {
+func GetFriendsList(username string) (friendsList []string) {
 	userId := GetUserID(username)
 
 	conn.QueryRow(`
 	
-	SELECT ARRAY_AGG(name), ARRAY_AGG(keyword)
-	FROM users 
-	
-	INNER JOIN friends ON friends.friend_id=users.id
-	WHERE orig_user=$1 
-	
-	GROUP BY friends.orig_user`, userId).Scan(&friendsList)
+	SELECT name, friend_code
+		FROM users
+		JOIN friends ON users.id = friends.user_one OR users.id = friends.user_two
+		WHERE friends.user_one = $1 OR friends.user_two = $1
+
+		GROUP BY users.id`, userId).Scan(&friendsList)
 	return
 }

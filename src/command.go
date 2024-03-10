@@ -5,10 +5,7 @@ import (
 	"Rapid/src/network"
 	"fmt"
 	"log"
-	"os"
 	"strings"
-
-	"github.com/olekukonko/tablewriter"
 )
 
 // Help command to list information about what you can run
@@ -36,6 +33,10 @@ func retrieveFlags(command string) []Flag {
 	args = strings.Split(command, " ")
 
 	for i, arg := range args {
+		// If user did not enter any arguments, continue
+		if strings.TrimSpace(arg) == "" {
+			break
+		}
 		if arg[0] == '-' {
 			// Found flag
 			var temp Flag
@@ -45,11 +46,9 @@ func retrieveFlags(command string) []Flag {
 			if strings.Compare(arg, "-send") == 0 || strings.Compare(arg, "-file") == 0 || strings.Compare(arg, "-add") == 0 || strings.Compare(arg, "-delete") == 0 || strings.Compare(arg, "-boot") == 0 || strings.Compare(temp.flag, "-recieve") == 0 {
 				if len(args[i+1]) == 0 {
 					log.Fatalf("Flag %s takes a value\n", temp.flag)
-					break
 				}
 				if args[i+1][0] == '-' {
 					log.Fatalf("Flag %s takes a value\n", temp.flag)
-					break
 				}
 				temp.input = args[i+1]
 				i++
@@ -67,6 +66,7 @@ func retrieveFlags(command string) []Flag {
 // Goes and runs through all the commands that are entered
 func command(flags []Flag, user string) {
 	sent := false
+LOOP:
 	for _, temp := range flags {
 		switch argument := temp.flag; argument {
 		case "-send":
@@ -83,6 +83,7 @@ func command(flags []Flag, user string) {
 			if !sent {
 				log.Fatal("Need to specify a file to send\n")
 			}
+			break LOOP
 		case "-file":
 			if sent {
 				continue
@@ -97,45 +98,43 @@ func command(flags []Flag, user string) {
 			if !sent {
 				log.Fatal("Need to specify a person to send the file to\n")
 			}
+			break LOOP
 		case "-add":
-			result := database.AddFriend(temp.input, user)
-			if !result {
-				fmt.Println("Failed to add friend! Not found!")
-			} else {
-				fmt.Println("User has been added!")
-			}
+			database.AddFriend(temp.input, user)
+			fmt.Println("Inbox has been displayed")
+			break LOOP
 		case "-inbox":
 			database.GetPendingTransfers(user)
 			fmt.Println("Inbox has been displayed")
+			break LOOP
 		case "-delete":
 			network.Fake_receive_file(temp.input)
 			fmt.Println("File has been deleted")
+			break LOOP
 		case "-boot":
 			database.DeleteFriend(user, temp.input)
 			fmt.Println("Friend has been deleted")
+			break LOOP
 		case "-recieve":
 			network.Receive_file(temp.input)
 			fmt.Println("File has been received")
+			break LOOP
 		case "-friends":
 			friendList := database.GetFriendsList(user)
-
-			// Creats cool table to display info with
-			table := tablewriter.NewWriter(os.Stdout)
-			table.SetHeader([]string{"Name", "Friend Code"})
-			table.SetCenterSeparator("|")
-			for _, v := range friendList {
-				table.Append(v)
+			for _, temp := range friendList {
+				fmt.Println("Friend name: ", temp)
 			}
-
-			// Prints that information
-			table.Render()
 			fmt.Println("Friends list has been displayed")
+			break LOOP
 		case "-info":
 			fmt.Printf("Username: %s, Friend_ID: %s\n", user, database.GetUserFriendCode(user))
+			break LOOP
 		case "-help":
 			help()
+			break LOOP
 		default:
 			log.Fatalf("Flag %s does not exist\n", argument)
+			break LOOP
 		}
 	}
 }

@@ -2,9 +2,11 @@ package database
 
 import (
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -93,8 +95,7 @@ func HandleAccountStartup() {
 		// User entered create
 		fmt.Println("You have decided to create a user, if you have other users they will still be accesible")
 		fmt.Println("Enter your username and password to get started\nExpected: username password")
-		_, err := fmt.Scan(&name)
-		_, err = fmt.Scan(&password)
+		_, err := fmt.Scan(&name, &password)
 
 		// Checks to make sure we cannot create multiple users on the same device with the same name
 		for alreadyExistsCheck(name, macAddr) != -1 {
@@ -108,12 +109,17 @@ func HandleAccountStartup() {
 		createAccount(name, password, macAddr)
 	} else {
 		_, err = fmt.Scan(&password)
+		//fmt.Println(password)
 		password = HashString(password)
 		if err != nil {
 			os.Exit(1)
 		}
 	}
-	getInformation(name, password, macAddr)
+	//fmt.Printf("Name: %s password: %s MacAddr: %s\n", name, password, macAddr)
+	err = getInformation(name, password, macAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func GetCurrentUser() User {
@@ -149,7 +155,7 @@ func createAccount(username string, password string, macAddress string) {
 	code := generateFriendCode()
 
 	// Inserts that data inside of the datbase
-	_, err := conn.Exec("INSERT INTO users (name, password, keyword, macaddr) VALUES ($1, $2, $3, $4)", username, password, code, macAddress)
+	_, err := conn.Exec("INSERT INTO users (name, password, friend_code, mac_address) VALUES ($1, $2, $3, $4)", username, password, code, macAddress)
 	if err != nil {
 		fmt.Printf("Failed to create account", err)
 	}
@@ -157,7 +163,7 @@ func createAccount(username string, password string, macAddress string) {
 
 // Retrieves a user's freind code based on their name, which is passed in
 func GetUserFriendCode(keyword string) (userKey string) {
-	err := conn.QueryRow("SELECT keyword FROM users WHERE name=$1", keyword).Scan(&userKey)
+	err := conn.QueryRow("SELECT friend_code FROM users WHERE name=$1", keyword).Scan(&userKey)
 	if err != nil {
 		panic("Failed at GetUserFriendCode")
 	}
@@ -168,14 +174,19 @@ func GetUserFriendCode(keyword string) (userKey string) {
 func GetUserID(name string) (userID int) {
 	err := conn.QueryRow("SELECT id FROM users WHERE name=$1", name).Scan(&userID)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("User not found")
+			return -1
+		}
+		fmt.Println("Error retrieving user ID:", err)
 		return -1
 	}
-	return
+	return userID
 }
 
 // Retrieves a user's id based on their name, which is passed in
 func alreadyExistsCheck(name string, macAddr string) (userID int) {
-	err := conn.QueryRow("SELECT id FROM users WHERE name=$1 AND macaddr=$2", name, macAddr).Scan(&userID)
+	err := conn.QueryRow("SELECT id FROM users WHERE name=$1 AND mac_address=$2", name, macAddr).Scan(&userID)
 	if err != nil {
 		return -1
 	}
@@ -185,9 +196,9 @@ func getInformation(name string, password string, macAddr string) error {
 	var id int
 	var keyword string
 	row := conn.QueryRow(
-		`SELECT id, name, keyword, macaddr 
+		`SELECT id, name, friend_code, mac_address 
 		FROM users 
-		WHERE name=$1 AND password=$2 AND macaddr=$3`, name, password, macAddr)
+		WHERE name=$1 AND password=$2 AND mac_address=$3`, name, password, macAddr)
 
 	err := row.Scan(&id, &name, &keyword, &macAddr)
 

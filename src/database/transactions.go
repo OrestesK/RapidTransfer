@@ -35,7 +35,7 @@ It uses the specific keyword associated with the transaction to fetch user infor
 func GetTransaction(keyword string) (names []string) {
 	var userFromID int
 	var userToID int
-	err := conn.QueryRow("SELECT uidFrom, uidTo FROM transaction WHERE keyword=$1", keyword).Scan(&userFromID, &userToID)
+	err := conn.QueryRow("SELECT from_user, to_user FROM transaction WHERE keyword=$1", keyword).Scan(&userFromID, &userToID)
 	if err != nil {
 		panic("Failed at GetTransaction")
 	}
@@ -78,7 +78,7 @@ UserCanViewTransaction checks if a user has the right to view a transaction.
 It verifies the user's involvement in the transaction using their ID and the transaction keyword.
 */
 func UserCanViewTransaction(userId int, phrase string) bool {
-	row := conn.QueryRow("SELECT COUNT(*) FROM transfer WHERE userfrom = $1 OR userto = $2 AND keyword = $3;", userId, userId, phrase)
+	row := conn.QueryRow("SELECT COUNT(*) FROM transfer WHERE from_user = $1 OR to_user = $2 AND keyword = $3;", userId, userId, phrase)
 	var count int
 
 	err := row.Scan(&count)
@@ -103,17 +103,19 @@ func DeleteTransactionWithAddress(address string) {
 PerformTransaction allows two users to send files to each other.
 It checks if the users are mutual friends and generates a unique phrase for the transaction.
 */
-func PerformTransaction(senderName string, receiverName string, address string, filename string) (keyword string) {
-	FromUserID := GetUserID(senderName)
-	ToUserID := GetUserID(receiverName)
+func PerformTransaction(user_from string, user_to string, address string, filename string) (keyword string) {
+	fmt.Printf("from user: %s to user: %s\n", user_from, user_to)
+
+	from_user_id := GetUserID(user_from)
+	to_user_id := GetUserID(user_to)
 
 	// Checks if users are mutual friends
-	if AreMutualFriends(senderName, receiverName) {
+	if AreMutualFriends(from_user_id, to_user_id) {
 		// Generates a unique phrase for the transaction
 		phrase := generateFriendCode()
 
 		// Inserts the transaction record into the database
-		_, err := conn.Exec("INSERT INTO transfer (userFrom, userTo, keyword, address, filename) VALUES ($1,$2,$3,$4,$5)", FromUserID, ToUserID, phrase, address, filename)
+		_, err := conn.Exec("INSERT INTO transfer (from_user, to_user, keyword, address, filename) VALUES ($1,$2,$3,$4,$5)", from_user_id, to_user_id, phrase, address, filename)
 		if err != nil {
 			fmt.Print("Failed at PerformTransaction")
 			panic(err)

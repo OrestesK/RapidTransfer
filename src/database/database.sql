@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS transfer 
 (
     id SERIAL PRIMARY KEY, 
-    userFrom INT NOT NULL, 
-    userTo INT NOT NULL, 
+    from_user INTEGER NOT NULL, 
+    to_user INTEGER NOT NULL, 
     keyword VARCHAR(100), 
     address VARCHAR(100), 
     filename VARCHAR(100)
@@ -14,12 +14,12 @@ CREATE TABLE IF NOT EXISTS users
     id SERIAL PRIMARY KEY, 
     name VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
-    keyword VARCHAR(100), 
-    macaddr VARCHAR(100)
+    friend_code VARCHAR(100), 
+    mac_address VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS friends
 (
-    orig_user INT NOT NULL, 
-    friend_id INT NOT NULL, 
+    user_one INTEGER REFERENCES users(id), 
+    user_two INTEGER REFERENCES users(id)
 );

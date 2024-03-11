@@ -1,18 +1,13 @@
-BINARY_NAME=RapidTransfer
-FLAGS=-ldflags "-s -w"
+EXECUTABLE=Rapid
 
-build:
-	@go build ${FLAGS} -o ${BINARY_NAME} src/*.go
+windows:
+	env GOOS=windows GOARCH=amd64 go build -o $$GOPATH/bin/$(EXECUTABLE).exe src/*.go
 
-main:
-	@go run src/main.go src/network.go src/parser.go $(ARG)
+linux:
+	env GOOS=linux GOARCH=amd64 go build -v -o $$GOPATH/bin/$(EXECUTABLE) src/*.go
+
+darwin:
+	env GOOS=darwin GOARCH=amd64 go build -v -o $$GOPATH/bin/$(EXECUTABLE) src/*.go
 
 clean:
-	@go clean
-	@rm ${BINARY_NAME}
-
-deps:
-	@go get github.com/libp2p/go-libp2p
-	@go get github.com/multiformats/go-multiaddr
-	@go mod tidy
-
+	rm -f $(WINDOWS) $(LINUX) $(DARWIN)

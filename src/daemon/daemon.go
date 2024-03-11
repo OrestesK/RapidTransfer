@@ -9,8 +9,11 @@ import (
 // this is the daemon
 func main() {
 	args := os.Args[1:]
-	user_to := args[0]
-	file_name := args[1]
+	user_from := args[0]
+	user_to := args[1]
+	file_name := args[2]
+
+	//fmt.Printf("to user: %s filename: %s\n", user_to, file_name)
 
 	node := network.Initialize_node()
 
@@ -18,12 +21,10 @@ func main() {
 	// I will computer and provide key
 	address := network.Server(node, file_name, done)
 
-	// initialize user
-	database.HandleAccountStartup()
-	_, user_from, _, _ := database.GetUserDetails()
-
+	// grabs needed user information of whoever is logged in currently
+	database.InitializeDatabase()
 	database.PerformTransaction(user_from, user_to, address, file_name)
-	// println(thing)
+	println("Waiting for user to accept file")
 
 	// wait :)
 	<-done

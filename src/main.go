@@ -2,6 +2,7 @@ package main
 
 import (
 	"Rapid/src/database"
+	"bufio"
 	"fmt"
 	"os"
 	"strings"
@@ -20,7 +21,10 @@ func main() {
 	arguments := strings.Join(splice, " ")
 	for {
 		// Retreives flags called and then runs the commands inside of them
-		fmt.Scanln(&arguments)
+		//fmt.Scanf(&arguments)
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		arguments = scanner.Text()
 		if strings.Compare(arguments, "quit") == 0 {
 			fmt.Println("You have chosen to exit the program")
 			break

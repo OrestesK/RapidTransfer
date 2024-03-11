@@ -1,6 +1,7 @@
 package database
 
 import (
+	"embed"
 	"fmt"
 	"os"
 	"sync"
@@ -37,26 +38,10 @@ func GetConn() (*pgx.Conn, error) {
 	return conn, nil
 }
 
-// Executes returns str of .sql file when given the path
-func execSQLFile(filename string, conn *pgx.Conn) error {
-	// Read the content of the SQL file
-	content, err := os.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	// Execute the SQL queries
-	_, err = conn.Exec(string(content))
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Inits all of the tables for the database
 func InitializeDatabase() {
-	const path = "src/database/database.sql"
+	var content embed.FS
+	path, _ := content.ReadFile("database.sql")
 
 	// Explicitly initialize the connection
 	conn, err := GetConn()
@@ -66,7 +51,7 @@ func InitializeDatabase() {
 	}
 
 	// Execute the SQL file
-	err = execSQLFile(path, conn)
+	_, err = conn.Exec(string(path))
 	if err != nil {
 		fmt.Println("Error executing SQL file:", err)
 		os.Exit(1)

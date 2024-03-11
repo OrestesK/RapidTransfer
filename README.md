@@ -37,51 +37,48 @@ Make sure you have Go installed on your system. You can download it [here](https
 
 1. Clone the repository:
 
-   ```bash
+   ```
    git clone https://github.com/your-username/rapid-transfer-system.git
 
-    Navigate to the project directory:
+   Navigate to the project directory:
 
-    bash
+   Download binary using make
+   make [windows, linux, darwin] 
    ```
-
-cd rapid-transfer-system
-
-Build the project:
-
-bash
-
-    go build
+2. Connect your SQL credentials inside of the init_database file (Will later change to make it easier to use)
 
 Usage
 Command Line Flags
-
-    -s or --send: Specify the file to send.
-    -p or --path: Specify the path to the file to send.
-    --friend: Specify the friend's username for sending or friend-related operations.
-    -r or --receive: Specify the file to receive.
-    -d or --delete: Specify the friend to delete.
-    --pend: View pending transfers.
-
-Examples
+```
+	-send user # Used to send file to user, must use -file path flag to specify the file
+	-file path # Used to specify the path to the file you are sending, must be used with -send
+	-add user_id # Used to add a friend, user_id is the id you retrieve when you use -info
+	-inbox # Used to retrive information about files you have yet to accept
+	-delete filename # Used to remove a file from your inbox
+	-boot friend_id # Used to remove a friend from your friends list
+	-recieve file # Used to accept a file being sent to you
+	-friends # Used to list all of your friends and their friend id
+	-info # Used to display your account information
+```
+Examples (After building the binary)
 Send a File:
 
-./rapid-transfer-system -s filename.txt --friend friend_username
+Rapid -send adam -file memes.png
 
 Receive a File:
 
-./rapid-transfer-system -r filename.txt
+Rapid -recieve memes.png
 
 View Pending Transfers:
 
-./rapid-transfer-system --pend
+Rapid -inbox
 
 Delete a Friend:
 
-./rapid-transfer-system -d friend_username
+Rapid -add adam
+
+Add a Friend:
+
+Rapid -delete adam
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-sql
-
-Replace `your-username` in the clone URL with your actual GitHub username, and add any specific details, usage instructions, or guidelines that might be relevant to your project.

@@ -20,11 +20,11 @@ func Send_file(user_to string, filename string) {
 	// os.WriteFile("pid", []byte(tt), 0755)
 }
 
-func Receive_file(transaction_identifier string) {
+func Receive_file(filename string) {
 	node := Initialize_node()
 	_, name, _, _ := database.GetUserDetails()
 	id := database.GetUserID(name)
-	result := database.UserCanViewTransaction(id, transaction_identifier)
+	result := database.UserCanViewTransaction(id, filename)
 	if !result {
 		// Cannot view this transaction.
 		fmt.Print("You cannot download this file.")
@@ -32,27 +32,25 @@ func Receive_file(transaction_identifier string) {
 	}
 
 	// get big key from small key
-	address := database.GetAddressFromTransactionPhrase(transaction_identifier)
-	file_name := database.GetFileNameFromTransactionPhrase(transaction_identifier)
+	address := database.GetAddressFromTransactionPhrase(filename)
 	done := make(chan bool)
 	// client
-	if len(file_name) == 0 {
+	if len(filename) == 0 {
 		fmt.Println("File Not found")
 	} else {
-		Client(node, address, file_name, done, false)
+		Client(node, address, filename, done, false)
 		<-done
 	}
 }
 
-func Fake_receive_file(transaction_identifier string) {
+func Fake_receive_file(filename string) {
 	node := Initialize_node()
 
 	// get big key from small key
-	address := database.GetAddressFromTransactionPhrase(transaction_identifier)
-	file_name := database.GetFileNameFromTransactionPhrase(transaction_identifier)
+	address := database.GetAddressFromTransactionPhrase(filename)
 
 	done := make(chan bool)
 	// client
-	Client(node, address, file_name, done, true)
+	Client(node, address, filename, done, true)
 	<-done
 }

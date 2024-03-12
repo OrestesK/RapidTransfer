@@ -17,10 +17,10 @@ import (
 var currentUser *User
 
 type User struct {
-	id      int
-	name    string
-	keyword string
-	macaddr string
+	id          int
+	name        string
+	friend_code string
+	macaddr     string
 }
 
 // Retrieves a user's name based on their id, which is passed in
@@ -51,7 +51,7 @@ func generateFriendCode() string {
 
 func GetUserDetails() (int, string, string, string) {
 	if currentUser != nil {
-		return currentUser.id, currentUser.name, currentUser.keyword, currentUser.macaddr
+		return currentUser.id, currentUser.name, currentUser.friend_code, currentUser.macaddr
 	}
 	panic("Null user was entered")
 }
@@ -162,8 +162,8 @@ func createAccount(username string, password string, macAddress string) {
 }
 
 // Retrieves a user's freind code based on their name, which is passed in
-func GetUserFriendCode(keyword string) (userKey string) {
-	err := conn.QueryRow("SELECT friend_code FROM users WHERE name=$1", keyword).Scan(&userKey)
+func GetUserFriendCode(name string) (friend_code string) {
+	err := conn.QueryRow("SELECT friend_code FROM users WHERE name=$1", name).Scan(&friend_code)
 	if err != nil {
 		panic("Failed at GetUserFriendCode")
 	}
@@ -194,23 +194,23 @@ func alreadyExistsCheck(name string, macAddr string) (userID int) {
 }
 func getInformation(name string, password string, macAddr string) error {
 	var id int
-	var keyword string
+	var friend_code string
 	row := conn.QueryRow(
 		`SELECT id, name, friend_code, mac_address 
 		FROM users 
 		WHERE name=$1 AND password=$2 AND mac_address=$3`, name, password, macAddr)
 
-	err := row.Scan(&id, &name, &keyword, &macAddr)
+	err := row.Scan(&id, &name, &friend_code, &macAddr)
 
 	if err != nil {
 		return errors.New("Username or password is wrong\n")
 	}
 
 	currentUser = &User{
-		id:      id,
-		name:    name,
-		keyword: keyword,
-		macaddr: macAddr,
+		id:          id,
+		name:        name,
+		friend_code: friend_code,
+		macaddr:     macAddr,
 	}
 	return nil
 }

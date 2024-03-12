@@ -18,10 +18,9 @@ func Send_file(user_from string, user_to string, filename string) {
 	// os.WriteFile("pid", []byte(tt), 0755)
 }
 
-func RecieveFile(filename string) {
+func RecieveFile(user string, filename string) {
 	node := Initialize_node()
-	_, name, _, _ := database.GetUserDetails()
-	id := database.GetUserID(name)
+	id := database.GetUserID(user)
 	result := database.UserCanViewTransaction(id, filename)
 
 	// get big key from small key

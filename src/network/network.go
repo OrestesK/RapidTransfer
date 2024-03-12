@@ -48,9 +48,11 @@ func Client(node host.Host, peerAddr string, file_name string, done chan bool, d
 		panic(err)
 	}
 	peerAddrInfo, err := peer.AddrInfoFromP2pAddr(peerMA)
+	fmt.Println(peerAddrInfo)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Printf("Info: %s PeerAddr: %s filename %s\n", peerAddrInfo, peerAddr, file_name)
 
 	// Connect to given address
 	if err := node.Connect(context.Background(), *peerAddrInfo); err != nil {

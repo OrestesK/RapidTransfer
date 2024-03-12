@@ -20,8 +20,8 @@ func Send_file(user_from string, user_to string, filename string) {
 
 func RecieveFile(user string, filename string) {
 	node := Initialize_node()
-	id := database.GetUserID(user)
-	result := database.UserCanViewTransaction(id, filename)
+	current_user := database.GetCurrentId()
+	result := database.UserCanViewTransaction(current_user, filename)
 
 	// get big key from small key
 	address, err := database.GetAddressFromFileName(filename)
@@ -37,9 +37,8 @@ func RecieveFile(user string, filename string) {
 
 func DeleteFile(filename string) {
 	node := Initialize_node()
-	_, name, _, _ := database.GetUserDetails()
-	id := database.GetUserID(name)
-	result := database.UserCanViewTransaction(id, filename)
+	current_user := database.GetCurrentId()
+	result := database.UserCanViewTransaction(current_user, filename)
 
 	// get big key from small key
 	address, err := database.GetAddressFromFileName(filename)

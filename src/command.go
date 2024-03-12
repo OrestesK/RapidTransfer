@@ -108,7 +108,7 @@ LOOP:
 			fmt.Println("Inbox has been displayed")
 			break LOOP
 		case "-delete":
-			network.Fake_receive_file(temp.input)
+			network.DeleteFile(temp.input)
 			fmt.Println("File has been deleted")
 			break LOOP
 		case "-boot":
@@ -116,7 +116,7 @@ LOOP:
 			fmt.Println("Friend has been deleted")
 			break LOOP
 		case "-recieve":
-			network.Receive_file(temp.input)
+			network.RecieveFile(temp.input)
 			fmt.Println("File has been received")
 			break LOOP
 		case "-friends":

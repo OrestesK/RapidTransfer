@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/jackc/pgx"
 )
@@ -46,17 +47,17 @@ func GetTransaction(filename string) (names []string) {
 }
 
 // GetAddressFromTransactionPhrase retrieves the address associated with a transaction keyword.
-func GetAddressFromTransactionPhrase(filename string) string {
+func GetAddressFromFileName(filename string) (string, error) {
 	row := conn.QueryRow("SELECT ip_address FROM transfer WHERE filename = $1", filename)
 	var address string
 	err := row.Scan(&address)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			fmt.Println("No results found")
-			return ""
+			return "", nil
 		}
+		return "", err
 	}
-	return address
+	return address, nil
 }
 
 /*
@@ -64,24 +65,29 @@ UserCanViewTransaction checks if a user has the right to view a transaction.
 It verifies the user's involvement in the transaction using their ID and the transaction keyword.
 */
 func UserCanViewTransaction(userId int, filename string) bool {
-	row := conn.QueryRow("SELECT COUNT(*) FROM transfer WHERE from_user = $1 OR to_user = $2 AND filename = $3", userId, userId, filename)
-	var count int
+	row := conn.QueryRow("SELECT id FROM transfer WHERE (from_user = $1 OR to_user = $2) AND filename = $3", userId, userId, filename)
 
-	err := row.Scan(&count)
+	// dummy value that will store the id and is not checked (just used to check if no rows)
+	var id int
+	err := row.Scan(&id)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			fmt.Println("No results found")
+			// Then user cannot view transaction
 			return false
 		}
 	}
-	return count > 0
+	// User can see transaction
+	return true
 }
 
 // DeleteTransactionWithAddress deletes a transaction record based on the given address.
 func DeleteTransactionWithAddress(address string) {
+	// Deletes from table
 	_, err := conn.Exec("DELETE FROM transfer WHERE ip_address = $1", address)
+
+	// Logs the error
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -90,7 +96,7 @@ PerformTransaction allows two users to send files to each other.
 It checks if the users are mutual friends and generates a unique phrase for the transaction.
 */
 func PerformTransaction(user_from string, user_to string, address string, filename string) {
-	fmt.Printf("from user: %s to user: %s\n", user_from, user_to)
+	fmt.Printf("from user: %s to user: %s filename: %s\n", user_from, user_to, filename)
 
 	from_user_id := GetUserID(user_from)
 	to_user_id := GetUserID(user_to)
@@ -100,9 +106,8 @@ func PerformTransaction(user_from string, user_to string, address string, filena
 		// Inserts the transaction record into the database
 		_, err := conn.Exec("INSERT INTO transfer (from_user, to_user, ip_address, filename) VALUES ($1,$2,$3,$4)", from_user_id, to_user_id, address, filename)
 		if err != nil {
-			fmt.Print("Failed at PerformTransaction")
-			panic(err)
+			log.Fatalf("Failed at PerformTransaction: %s", err)
 		}
 	}
-	fmt.Print("Failed to create transaction")
+	log.Fatalf("You cannot send files to users you are not friends with")
 }

@@ -41,7 +41,7 @@ func Server(node host.Host, file_name string, done chan bool) string {
 	return key
 }
 
-func Client(node host.Host, peerAddr string, file_name string, done chan bool, fake bool) {
+func Client(node host.Host, peerAddr string, file_name string, done chan bool, delete bool) {
 	// Parse the multiaddr string.
 	peerMA, err := multiaddr.NewMultiaddr(peerAddr)
 	if err != nil {
@@ -65,7 +65,7 @@ func Client(node host.Host, peerAddr string, file_name string, done chan bool, f
 	}
 
 	//TODO THIS GETS HERE
-	go read(s, file_name, done, fake) // Start Read thread
+	go read(s, file_name, done, delete) // Start Read thread
 }
 
 func write(s network.Stream, file_name string, done chan bool) {
@@ -96,7 +96,7 @@ func write(s network.Stream, file_name string, done chan bool) {
 	done <- true
 }
 
-func read(s network.Stream, file_name string, done chan bool, fake bool) {
+func read(s network.Stream, file_name string, done chan bool, delete bool) {
 	var dataLength int64
 	err := binary.Read(s, binary.BigEndian, &dataLength)
 	if err != nil {
@@ -113,7 +113,7 @@ func read(s network.Stream, file_name string, done chan bool, fake bool) {
 		return
 	}
 
-	if fake {
+	if delete {
 		done <- true
 		return
 	}

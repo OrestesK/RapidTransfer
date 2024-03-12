@@ -13,7 +13,7 @@ func main() {
 	database.InitializeDatabase()
 	database.HandleAccountStartup()
 
-	user := database.GetUserNameByID(current_user)
+	user := database.GetUserNameByID(database.GetCurrentId())
 	fmt.Printf("Currently Logged in as %s\n", user)
 
 	// Creates a splice from the command line input

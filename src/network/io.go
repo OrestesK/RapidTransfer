@@ -4,14 +4,12 @@ import (
 	"Rapid/src/database"
 	"fmt"
 
-	// "fmt"
-	// "os"
 	"os/exec"
 )
 
-func Send_file(user_to string, filename string) {
+func Send_file(user_from string, user_to string, filename string) {
 	// execute daemon, runs in background independent of this
-	cmd := exec.Command("go", "run", "src/daemon/daemon.go", user_to, filename)
+	cmd := exec.Command("go", "run", "src/daemon/daemon.go", user_from, user_to, filename)
 
 	cmd.Start()
 
@@ -20,39 +18,36 @@ func Send_file(user_to string, filename string) {
 	// os.WriteFile("pid", []byte(tt), 0755)
 }
 
-func Receive_file(transaction_identifier string) {
+func RecieveFile(user string, filename string) {
 	node := Initialize_node()
-	_, name, _, _ := database.GetUserDetails()
-	id := database.GetUserID(name)
-	result := database.UserCanViewTransaction(id, transaction_identifier)
-	if !result {
-		// Cannot view this transaction.
-		fmt.Print("You cannot download this file.")
-		return
-	}
+	current_user := database.GetCurrentId()
+	result := database.UserCanViewTransaction(current_user, filename)
 
 	// get big key from small key
-	address := database.GetAddressFromTransactionPhrase(transaction_identifier)
-	file_name := database.GetFileNameFromTransactionPhrase(transaction_identifier)
+	address, err := database.GetAddressFromFileName(filename)
 	done := make(chan bool)
 	// client
-	if len(file_name) == 0 {
+	if (err == nil && address == "") || !result {
 		fmt.Println("File Not found")
 	} else {
-		Client(node, address, file_name, done, false)
+		Client(node, address, filename, done, false)
 		<-done
 	}
 }
 
-func Fake_receive_file(transaction_identifier string) {
+func DeleteFile(filename string) {
 	node := Initialize_node()
+	current_user := database.GetCurrentId()
+	result := database.UserCanViewTransaction(current_user, filename)
 
 	// get big key from small key
-	address := database.GetAddressFromTransactionPhrase(transaction_identifier)
-	file_name := database.GetFileNameFromTransactionPhrase(transaction_identifier)
-
+	address, err := database.GetAddressFromFileName(filename)
 	done := make(chan bool)
 	// client
-	Client(node, address, file_name, done, true)
-	<-done
+	if (err == nil && address == "") || !result {
+		fmt.Println("File Not found")
+	} else {
+		Client(node, address, filename, done, true)
+		<-done
+	}
 }

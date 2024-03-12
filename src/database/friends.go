@@ -76,14 +76,34 @@ func AreMutualFriends(user_one_id int, user_two_id int) bool {
 // GetFriendsList retrieves a list of friends for a given user.
 func GetFriendsList(username string) (friendsList []string) {
 	userId := GetUserID(username)
+	fmt.Println(userId)
+	user_one := getUserOneFriends(userId)
+	user_two := getUserTwoFriends(userId)
 
-	conn.QueryRow(`
-	
-	SELECT name, friend_code
-		FROM users
-		JOIN friends ON users.id = friends.user_one OR users.id = friends.user_two
-		WHERE friends.user_one = $1 OR friends.user_two = $1
+	friendsList = append(user_one, user_two...)
+	fmt.Println(friendsList)
+	return
+}
 
-		GROUP BY users.id`, userId).Scan(&friendsList)
+func getUserOneFriends(userId int) (friendsList []string) {
+	query := `
+        SELECT ARRAY_AGG(name), ARRAY_AGG(friend_code)
+        FROM users
+        JOIN friends ON users.id = friends.user_two
+        WHERE friends.user_one = %s
+		GROUP BY friends.user_one`
+
+	conn.QueryRow(query, userId).Scan(&friendsList)
+	return
+}
+func getUserTwoFriends(userId int) (friendsList []string) {
+	query := `
+        SELECT ARRAY_AGG(name), ARRAY_AGG(friend_code)
+        FROM users
+        JOIN friends ON users.id = friends.user_one
+        WHERE friends.user_two = %s
+		GROUP BY friends.user_two`
+
+	conn.QueryRow(query, userId).Scan(&friendsList)
 	return
 }

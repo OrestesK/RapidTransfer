@@ -14,21 +14,13 @@ import (
 	"time"
 )
 
-var currentUser *User
-
-type User struct {
-	id      int
-	name    string
-	keyword string
-	macaddr string
-}
+var current_user int
 
 // Retrieves a user's name based on their id, which is passed in
 func GetUserNameByID(id int) (userName string) {
 	err := conn.QueryRow("SELECT name FROM users WHERE id=$1", id).Scan(&userName)
 	if err != nil {
-		fmt.Print("Failed at GetUserNameByID")
-		return ""
+		log.Fatalf("Could not find user with id=%s", id)
 	}
 	return
 }
@@ -49,17 +41,10 @@ func generateFriendCode() string {
 	return result
 }
 
-func GetUserDetails() (int, string, string, string) {
-	if currentUser != nil {
-		return currentUser.id, currentUser.name, currentUser.keyword, currentUser.macaddr
-	}
-	panic("Null user was entered")
-}
-
 /*
 Hashes using the SHA256 package
 */
-func HashString(text string) string {
+func hashInfo(text string) string {
 
 	// Inits the hash
 	h := sha256.New()
@@ -85,7 +70,7 @@ func HandleAccountStartup() {
 	macAddr, _ := getMacAddress()
 
 	// Hashes that mac address to compare
-	macAddr = HashString(macAddr)
+	macAddr = hashInfo(macAddr)
 
 	fmt.Print("Enter your username and password to login or create to create a new user\nExpected: username password or create\n")
 
@@ -105,28 +90,21 @@ func HandleAccountStartup() {
 		if err != nil {
 			os.Exit(1)
 		}
-		password = HashString(password)
+		password = hashInfo(password)
 		createAccount(name, password, macAddr)
 	} else {
 		_, err = fmt.Scan(&password)
 		//fmt.Println(password)
-		password = HashString(password)
+		password = hashInfo(password)
 		if err != nil {
 			os.Exit(1)
 		}
 	}
 	//fmt.Printf("Name: %s password: %s MacAddr: %s\n", name, password, macAddr)
-	err = getInformation(name, password, macAddr)
+	err = setCurrentUsersId(name, password, macAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func GetCurrentUser() User {
-	if currentUser != nil {
-		return *currentUser
-	}
-	return User{}
 }
 
 func getMacAddress() (string, error) {
@@ -162,8 +140,8 @@ func createAccount(username string, password string, macAddress string) {
 }
 
 // Retrieves a user's freind code based on their name, which is passed in
-func GetUserFriendCode(keyword string) (userKey string) {
-	err := conn.QueryRow("SELECT friend_code FROM users WHERE name=$1", keyword).Scan(&userKey)
+func GetUserFriendCode(name string) (friend_code string) {
+	err := conn.QueryRow("SELECT friend_code FROM users WHERE name=$1", name).Scan(&friend_code)
 	if err != nil {
 		panic("Failed at GetUserFriendCode")
 	}
@@ -192,25 +170,20 @@ func alreadyExistsCheck(name string, macAddr string) (userID int) {
 	}
 	return
 }
-func getInformation(name string, password string, macAddr string) error {
-	var id int
-	var keyword string
+func setCurrentUsersId(name string, password string, macAddr string) error {
 	row := conn.QueryRow(
-		`SELECT id, name, friend_code, mac_address 
+		`SELECT id 
 		FROM users 
 		WHERE name=$1 AND password=$2 AND mac_address=$3`, name, password, macAddr)
 
-	err := row.Scan(&id, &name, &keyword, &macAddr)
+	err := row.Scan(&current_user)
 
 	if err != nil {
 		return errors.New("Username or password is wrong\n")
 	}
-
-	currentUser = &User{
-		id:      id,
-		name:    name,
-		keyword: keyword,
-		macaddr: macAddr,
-	}
 	return nil
+}
+
+func GetCurrentId() int {
+	return current_user
 }

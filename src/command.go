@@ -44,10 +44,7 @@ func retrieveFlags(command string) []Flag {
 			temp.input = ""
 			// Checks for any flags that actually need input. If they do, then add the next arg and increment i to skip it
 			if strings.Compare(arg, "-send") == 0 || strings.Compare(arg, "-file") == 0 || strings.Compare(arg, "-add") == 0 || strings.Compare(arg, "-delete") == 0 || strings.Compare(arg, "-boot") == 0 || strings.Compare(temp.flag, "-recieve") == 0 {
-				if len(args[i+1]) == 0 {
-					log.Fatalf("Flag %s takes a value\n", temp.flag)
-				}
-				if args[i+1][0] == '-' {
+				if len(args[i+1]) == 0 || args[i+1][0] == '-' {
 					log.Fatalf("Flag %s takes a value\n", temp.flag)
 				}
 				temp.input = args[i+1]
@@ -75,7 +72,7 @@ LOOP:
 			}
 			for _, search := range flags {
 				if strings.Compare(search.flag, "-file") == 0 {
-					network.Send_file(temp.input, search.input)
+					network.Send_file(user, temp.input, search.input)
 					fmt.Println("File has been sent and will be waiting to be accepted")
 					sent = true
 				}
@@ -90,7 +87,7 @@ LOOP:
 			}
 			for _, search := range flags {
 				if strings.Compare(search.flag, "-send") == 0 {
-					network.Send_file(temp.input, search.input)
+					network.Send_file(user, temp.input, search.input)
 					fmt.Println("File has been sent and is waiting to be accepted")
 					sent = true
 				}
@@ -108,7 +105,7 @@ LOOP:
 			fmt.Println("Inbox has been displayed")
 			break LOOP
 		case "-delete":
-			network.Fake_receive_file(temp.input)
+			network.DeleteFile(temp.input)
 			fmt.Println("File has been deleted")
 			break LOOP
 		case "-boot":
@@ -116,7 +113,7 @@ LOOP:
 			fmt.Println("Friend has been deleted")
 			break LOOP
 		case "-recieve":
-			network.Receive_file(temp.input)
+			network.RecieveFile(user, temp.input)
 			fmt.Println("File has been received")
 			break LOOP
 		case "-friends":

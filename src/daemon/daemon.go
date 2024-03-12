@@ -21,7 +21,6 @@ func main() {
 	// I will computer and provide key
 	address := network.Server(node, file_name, done)
 
-	// grabs needed user information of whoever is logged in currently
 	database.InitializeDatabase()
 	database.PerformTransaction(user_from, user_to, address, file_name)
 	println("Waiting for user to accept file")

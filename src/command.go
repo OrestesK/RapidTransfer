@@ -1,8 +1,8 @@
 package main
 
 import (
+	"Rapid/src/cloud"
 	"Rapid/src/database"
-	"Rapid/src/network"
 	"fmt"
 	"log"
 	"strings"
@@ -61,7 +61,7 @@ func retrieveFlags(command string) []Flag {
 }
 
 // Goes and runs through all the commands that are entered
-func command(flags []Flag, user string) {
+func command(flags []Flag, user int) {
 	sent := false
 LOOP:
 	for _, temp := range flags {
@@ -72,7 +72,7 @@ LOOP:
 			}
 			for _, search := range flags {
 				if strings.Compare(search.flag, "-file") == 0 {
-					network.Send_file(user, temp.input, search.input)
+					cloud.UploadToMega(search.input, 1, temp.input)
 					fmt.Println("File has been sent and will be waiting to be accepted")
 					sent = true
 				}
@@ -87,7 +87,7 @@ LOOP:
 			}
 			for _, search := range flags {
 				if strings.Compare(search.flag, "-send") == 0 {
-					network.Send_file(user, temp.input, search.input)
+					cloud.UploadToMega(search.input, 1, temp.input)
 					fmt.Println("File has been sent and is waiting to be accepted")
 					sent = true
 				}
@@ -105,7 +105,7 @@ LOOP:
 			fmt.Println("Inbox has been displayed")
 			break LOOP
 		case "-delete":
-			network.DeleteFile(temp.input)
+			// Implement with cloud
 			fmt.Println("File has been deleted")
 			break LOOP
 		case "-boot":
@@ -113,7 +113,7 @@ LOOP:
 			fmt.Println("Friend has been deleted")
 			break LOOP
 		case "-recieve":
-			network.RecieveFile(user, temp.input)
+			// Implement with cloud
 			fmt.Println("File has been received")
 			break LOOP
 		case "-friends":
@@ -124,7 +124,7 @@ LOOP:
 			fmt.Println("Friends list has been displayed")
 			break LOOP
 		case "-info":
-			fmt.Printf("Username: %s, Friend_ID: %s\n", user, database.GetUserFriendCode(user))
+			fmt.Printf("Username: %s, Friend code: %s\n", database.GetUserNameByID(user), database.GetUserFriendCode(user))
 			break LOOP
 		case "-help":
 			help()

@@ -12,9 +12,8 @@ import (
 func main() {
 	database.InitializeDatabase()
 	database.HandleAccountStartup()
-
-	user := database.GetUserNameByID(database.GetCurrentId())
-	fmt.Printf("Currently Logged in as %s\n", user)
+	user := database.GetCurrentId()
+	fmt.Printf("Currently Logged in as %s\n", database.GetUserNameByID(database.GetCurrentId()))
 
 	// Creates a splice from the command line input
 	splice := os.Args[1:]
@@ -35,3 +34,14 @@ func main() {
 		fmt.Print(">> ")
 	}
 }
+
+/*
+func main() {
+	_, client := cloud.InitMega()
+	//cloud.UploadToMega(client, "../../testing", 1, "adam")
+	err := cloud.DownloadFromMega(client, "mega:/hello.txt")
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+*/

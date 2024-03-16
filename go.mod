@@ -15,6 +15,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
+	github.com/t3rm1n4l/go-mega v0.0.0-20240219080617-d494b6a8ace7 // indirect
 )
 
 require (

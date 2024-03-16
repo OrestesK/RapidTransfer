@@ -1,0 +1,23 @@
+
+{
+    "MEGA": [
+        {
+            "User" : "MEGA_USERNAME",
+            "Password" : "MEGA_PASSWORD",
+            "DownloadWorkers" : 4,
+            "UploadWorkers" : 4,
+            "SkipSameSize" : true,
+            "Verbose" : 1
+        }
+    ],
+
+    "SQL": [
+        {
+            "Host": "localhost",
+            "Port": 5432,
+            "Database": "rapidtransfer",
+            "User": "swen344",
+            "DatabasePassword": "Forzano17**"
+        }
+    ]
+}

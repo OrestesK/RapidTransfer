@@ -16,7 +16,7 @@ func GetUserNameByFriendCode(friendCode string) (userName string) {
 }
 
 // AddFriend adds a friend to a sender's friends list based on their friend code.
-func AddFriend(friendCode string, senderName string) {
+func AddFriend(friendCode string, sender_id int) {
 	var to_friend_id int
 	var friend_name string
 	// Finds the friend code
@@ -29,16 +29,14 @@ func AddFriend(friendCode string, senderName string) {
 		}
 	}
 
-	from_user_id := GetUserID(senderName)
-
-	isFriend := AreMutualFriends(from_user_id, to_friend_id)
+	isFriend := AreMutualFriends(sender_id, to_friend_id)
 	if isFriend {
 		log.Printf("User %s has already been added.\n", friend_name)
 	} else {
 		// New user is added
 		_, err = conn.Exec(`
 	INSERT INTO friends (user_one, user_two) VALUES ($1, $2)
-	`, from_user_id, to_friend_id)
+	`, sender_id, to_friend_id)
 		if err != nil {
 			log.Printf("Error %s has occured.\n", err)
 		}
@@ -47,10 +45,10 @@ func AddFriend(friendCode string, senderName string) {
 }
 
 // DeleteFriend deletes a one-way friendship between two users.
-func DeleteFriend(senderName string, recieverName string) {
-	_, err := conn.Exec("DELETE FROM friends WHERE user_one=$1 AND user_two=$2", GetUserID(senderName), GetUserID(recieverName))
+func DeleteFriend(senderid int, recieverName string) {
+	_, err := conn.Exec("DELETE FROM friends WHERE (user_one=$1 AND user_two=$2) OR user_one=$2 AND user_two=$1) ", senderid, GetUserID(recieverName))
 	if err != nil {
-		fmt.Println("Query failed", err)
+		fmt.Println("Failed to remove friend", err)
 	}
 }
 
@@ -74,11 +72,9 @@ func AreMutualFriends(user_one_id int, user_two_id int) bool {
 }
 
 // GetFriendsList retrieves a list of friends for a given user.
-func GetFriendsList(username string) (friendsList []string) {
-	userId := GetUserID(username)
-	fmt.Println(userId)
-	user_one := getUserOneFriends(userId)
-	user_two := getUserTwoFriends(userId)
+func GetFriendsList(user_id int) (friendsList []string) {
+	user_one := getUserOneFriends(user_id)
+	user_two := getUserTwoFriends(user_id)
 
 	friendsList = append(user_one, user_two...)
 	fmt.Println(friendsList)

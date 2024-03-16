@@ -44,7 +44,7 @@ func generateFriendCode() string {
 /*
 Hashes using the SHA256 package
 */
-func hashInfo(text string) string {
+func HashInfo(text string) string {
 
 	// Inits the hash
 	h := sha256.New()
@@ -70,7 +70,7 @@ func HandleAccountStartup() {
 	macAddr, _ := getMacAddress()
 
 	// Hashes that mac address to compare
-	macAddr = hashInfo(macAddr)
+	macAddr = HashInfo(macAddr)
 
 	fmt.Print("Enter your username and password to login or create to create a new user\nExpected: username password or create\n")
 
@@ -90,12 +90,12 @@ func HandleAccountStartup() {
 		if err != nil {
 			os.Exit(1)
 		}
-		password = hashInfo(password)
+		password = HashInfo(password)
 		createAccount(name, password, macAddr)
 	} else {
 		_, err = fmt.Scan(&password)
 		//fmt.Println(password)
-		password = hashInfo(password)
+		password = HashInfo(password)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -140,8 +140,8 @@ func createAccount(username string, password string, macAddress string) {
 }
 
 // Retrieves a user's freind code based on their name, which is passed in
-func GetUserFriendCode(name string) (friend_code string) {
-	err := conn.QueryRow("SELECT friend_code FROM users WHERE name=$1", name).Scan(&friend_code)
+func GetUserFriendCode(user_id int) (friend_code string) {
+	err := conn.QueryRow("SELECT friend_code FROM users WHERE id=$1", user_id).Scan(&friend_code)
 	if err != nil {
 		panic("Failed at GetUserFriendCode")
 	}

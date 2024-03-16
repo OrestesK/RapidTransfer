@@ -1,0 +1,8 @@
+{
+    "User" : "MEGA_USERNAME",
+    "Password" : "MEGA_PASSWORD",
+    "DownloadWorkers" : 4,
+    "UploadWorkers" : 4,
+    "SkipSameSize" : true,
+    "Verbose" : 1
+}

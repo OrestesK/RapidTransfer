@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS transfer
     id SERIAL PRIMARY KEY, 
     from_user INTEGER NOT NULL, 
     to_user INTEGER NOT NULL, 
-    ip_address VARCHAR(100), 
+    key VARCHAR(100), 
     filename VARCHAR(100)
 );
 

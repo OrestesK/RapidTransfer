@@ -1,8 +1,11 @@
 package cloud
 
 import (
+	"Rapid/src/database"
 	encription "Rapid/src/transfer"
 	"bytes"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -11,6 +14,16 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+// Generates a random 32 character string for encryption purposes
+func generateKey() (string, error) {
+	randomBytes := make([]byte, 32)
+	_, err := rand.Read(randomBytes)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(randomBytes), nil
+}
 
 /*
 Uploads a zip to the cloud
@@ -21,21 +34,22 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 	split := strings.Split(path, "/")
 	name_of_item := split[len(split)-1]
 
-	// Ecncryption key (yeah ill do something about this at some point)
-	key := "passphrasewhichneedstobe32bytes!"
+	// Ecncryption key (randomly generated)
+	key, _ := generateKey()
 
 	// Makes sure user is allowed to send the file before procceding
-	/*
-		if !database.PerformTransaction(from_user_id, user_to, name_of_item, database.HashInfo(key)) {
-			return nil, false
-		}
-	*/
+
+	if !database.PerformTransaction(from_user_id, user_to, name_of_item, key) {
+		return nil, false
+	}
+
 	// makes name include the zip
-	name := fmt.Sprintf("%s.zip", name_of_item)
+	name := fmt.Sprintf("%s.zip", database.HashInfo(name_of_item))
+	hashed_key := database.HashInfo(key)
 
 	// Encrypts the file
 	encription.ZipEncryptFolder(path, name, key)
-	location := fmt.Sprintf("../temp/%s", name)
+	location := fmt.Sprintf("../temp/%s_%s", hashed_key, name)
 
 	// Sends that file to MEGA
 	cmd := exec.Command("megacmd", "put", location, "mega:/")
@@ -72,7 +86,14 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 	return nil, true
 }
 
-func DownloadFromMega(file_name string, location string) {
+func DownloadFromMega(user int, file_name string, location string) (error, bool) {
+
+	if !database.UserCanViewTransaction(user, file_name) {
+		return nil, false
+	}
+
+	// Ecncryption key
+	key := database.RetrieveKey(file_name, user)
 
 	// Gets the current directory the user is in
 	current_dir, _ := os.Getwd()
@@ -80,8 +101,9 @@ func DownloadFromMega(file_name string, location string) {
 	// Destination the file will be downloaded to
 	destination := filepath.Join(current_dir, location, file_name)
 	fmt.Println(destination)
-	// Formats it for the mega cloud
-	cloud_dir := fmt.Sprintf("mega:/%s", file_name)
+
+	// Formats it for the mega cloud (readjusts the name to fit the hashing)
+	cloud_dir := fmt.Sprintf("mega:/%s_%s", database.HashInfo(key), database.HashInfo(file_name))
 
 	// Calls cmd command to retrieve the file
 	cmd := exec.Command("megacmd", "get", cloud_dir, destination)
@@ -100,9 +122,6 @@ func DownloadFromMega(file_name string, location string) {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
 
-	// Ecncryption key (yeah ill do something about this at some point)
-	key := "passphrasewhichneedstobe32bytes!"
-
 	// Reverts to original name by splitting at zip
 	original_name := strings.Split(file_name, ".zip")
 
@@ -118,12 +137,16 @@ func DownloadFromMega(file_name string, location string) {
 		log.Println(err)
 	}
 
+	// Removes the copy from the cloud so that no users can access it
+	DeleteFromMega(database.HashInfo(key), file_name)
+	return nil, true
 }
 
-func DeleteFromMega(file_name string) {
+// Removes the file from the cloud
+func DeleteFromMega(hashed_key, file_name string) {
 
 	// Formats it for the mega cloud
-	cloud_dir := fmt.Sprintf("mega:/%s", file_name)
+	cloud_dir := fmt.Sprintf("mega:/%s_%s", hashed_key, database.HashInfo(file_name))
 
 	// Calls cmd command to retrieve the file
 	cmd := exec.Command("megacmd", "delete", cloud_dir)

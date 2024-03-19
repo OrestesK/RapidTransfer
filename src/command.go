@@ -105,7 +105,7 @@ LOOP:
 			fmt.Println("Inbox has been displayed")
 			break LOOP
 		case "-delete":
-			// Implement with cloud
+			cloud.DeleteFromMega(temp.input)
 			fmt.Println("File has been deleted")
 			break LOOP
 		case "-boot":
@@ -113,7 +113,7 @@ LOOP:
 			fmt.Println("Friend has been deleted")
 			break LOOP
 		case "-recieve":
-			cloud.DownloadFromMega(temp.input)
+			cloud.DownloadFromMega(temp.input, "")
 			fmt.Println("File has been received")
 			break LOOP
 		case "-friends":

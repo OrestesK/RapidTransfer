@@ -43,8 +43,6 @@ func GetConn() (*pgx.Conn, error) {
 func InitializeDatabase() {
 	var content embed.FS
 	path, _ := content.ReadFile("database.sql")
-	//data.Parse("src/data/sql.json")
-	// Explicitly initialize the connection
 	conn, err := GetConn()
 	if err != nil {
 		fmt.Println("Error connecting to the database:", err)

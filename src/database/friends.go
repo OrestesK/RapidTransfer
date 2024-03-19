@@ -58,8 +58,7 @@ func IsFriend(user_one_id int, user_two_id int) bool {
 	SELECT id 
 	FROM friends 
 	INNER JOIN users ON friends.user_one=users.id AND friends.user_two=users.id 
-	WHERE user_from=$1 
-	AND user_to=$2`, user_one_id, user_two_id)
+	WHERE friends.user_one=1 AND friends.user_two=2`, user_one_id, user_two_id)
 	if row.Scan() == sql.ErrNoRows {
 		return false
 	}

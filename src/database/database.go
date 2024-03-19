@@ -1,8 +1,7 @@
 package database
 
 import (
-	"Rapid/src/data"
-	. "Rapid/src/data"
+	private "Rapid"
 	"embed"
 	"fmt"
 	"os"
@@ -15,7 +14,7 @@ var conn *pgx.Conn
 var connMutex sync.Mutex
 
 // Create target connection for the database
-func GetConn(host Sql) (*pgx.Conn, error) {
+func GetConn() (*pgx.Conn, error) {
 	connMutex.Lock()
 	defer connMutex.Unlock()
 
@@ -24,11 +23,11 @@ func GetConn(host Sql) (*pgx.Conn, error) {
 	}
 
 	connConfig := pgx.ConnConfig{
-		Host:     host.Host,
-		Port:     host.Port,
-		Database: host.Database,
-		User:     host.User,
-		Password: host.DatabasePassword,
+		Host:     private.Host,
+		Port:     private.Port,
+		Database: private.Database,
+		User:     private.User,
+		Password: private.DatabasePassword,
 	}
 
 	newConn, err := pgx.Connect(connConfig)
@@ -44,9 +43,9 @@ func GetConn(host Sql) (*pgx.Conn, error) {
 func InitializeDatabase() {
 	var content embed.FS
 	path, _ := content.ReadFile("database.sql")
-	data.Parse("src/data/sql.json")
+	//data.Parse("src/data/sql.json")
 	// Explicitly initialize the connection
-	conn, err := GetConn(data.Config.SQL[0])
+	conn, err := GetConn()
 	if err != nil {
 		fmt.Println("Error connecting to the database:", err)
 		os.Exit(1)

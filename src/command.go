@@ -72,7 +72,7 @@ LOOP:
 			}
 			for _, search := range flags {
 				if strings.Compare(search.flag, "-file") == 0 {
-					cloud.UploadToMega(search.input, 1, temp.input)
+					cloud.UploadToMega(search.input, user, temp.input)
 					fmt.Println("File has been sent and will be waiting to be accepted")
 					sent = true
 				}
@@ -87,7 +87,7 @@ LOOP:
 			}
 			for _, search := range flags {
 				if strings.Compare(search.flag, "-send") == 0 {
-					cloud.UploadToMega(search.input, 1, temp.input)
+					cloud.UploadToMega(search.input, user, temp.input)
 					fmt.Println("File has been sent and is waiting to be accepted")
 					sent = true
 				}
@@ -113,7 +113,7 @@ LOOP:
 			fmt.Println("Friend has been deleted")
 			break LOOP
 		case "-recieve":
-			// Implement with cloud
+			cloud.DownloadFromMega(temp.input)
 			fmt.Println("File has been received")
 			break LOOP
 		case "-friends":

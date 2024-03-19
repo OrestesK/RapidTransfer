@@ -1,13 +1,8 @@
 package main
 
-import (
-	"Rapid/src/database"
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
-)
+import "Rapid/src/cloud"
 
+/*
 // Main method for runnning the system
 func main() {
 	database.InitializeDatabase()
@@ -34,14 +29,18 @@ func main() {
 		fmt.Print(">> ")
 	}
 }
-
-/*
-func main() {
-	_, client := cloud.InitMega()
-	//cloud.UploadToMega(client, "../../testing", 1, "adam")
-	err := cloud.DownloadFromMega(client, "mega:/hello.txt")
-	if err != nil {
-		fmt.Println(err)
-	}
-}
 */
+
+func main() {
+	/*
+		key := "passphrasewhichneedstobe32bytes!"
+		encription.ZipEncryptFolder("../testing", "testing.zip", key)
+		if err := encription.DecryptZipFolder("testing.zip", "../output", key); err != nil {
+			fmt.Println("Error decrypting and unzipping folder:", err)
+			return
+		}
+	*/
+	//cloud.UploadToMega("../testing", 1, "adam")
+	//cloud.DownloadFromMega("testing.zip", "")
+	cloud.DeleteFromMega("testing.zip")
+}

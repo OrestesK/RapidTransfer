@@ -62,15 +62,12 @@ Examples **After completing all the steps to get the binary working**
 Send a File:
 Rapid -send adam -file memes.png
 Receive a File:
-Rapid -recieve memes.png
+Rapid -recieve text.txt
 View Pending Transfers:
 Rapid -inbox
-Delete a Friend:
-Rapid -add adam
-```
-
 Add a Friend:
-
-Rapid -delete adam
-
+Rapid -add adam
+Delete a Friend:
+Rapid -boot adam
+```
 This project is licensed under the MIT License - see the LICENSE file for details.

@@ -1,7 +1,7 @@
 package private
 
-const Host = "localhost"
+const Host = "Host"
 const Port = 5432
-const Database = "rapidtransfer"
-const User = "swen344"
-const DatabasePassword = "Forzano17**"
+const Database = "rapid"
+const User = "user"
+const DatabasePassword = "password"

@@ -4,9 +4,9 @@ Rapid Transfer System is a simple system for transferring files between users us
 
 ## Am working on
 - Getting dependency binary inside of the project for easy use ? go generate
-- fixing the download from the cloud so that it does not remove the entire current directory... yeah i found out the hard way
-- having go create a temp directory outside of the project for the encryption process
-- adding a box around the friends list and pending transfers list
+- ~~fixing the download from the cloud so that it does not remove the entire current directory... yeah i found out the hard way~~
+- ~~having go create a temp directory outside of the project for the encryption process~~
+- ~~adding a box around the friends list and pending transfers list~~
 
 
 

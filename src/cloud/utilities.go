@@ -125,7 +125,7 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
 	encryped_name := fmt.Sprintf("%s_%s.zip", database.HashInfo(key), database.HashInfo(file_name))
-	file_location := filepath.joinpath(destination, encryped_name)
+	file_location := filepath.Join(destination, encryped_name)
 	// Decripts folder
 	err = encription.DecryptZipFolder(file_location, file_name, key)
 	if err != nil {

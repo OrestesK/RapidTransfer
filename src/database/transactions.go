@@ -77,7 +77,7 @@ func PerformTransaction(from_user_id int, user_to string, filename string, key s
 }
 
 func RetrieveKey(filename string, to_user int) string {
-	row := conn.QueryRow("SELECT key FROM transfer WHERE to_user = $2 AND filename = $3", to_user, filename)
+	row := conn.QueryRow("SELECT key FROM transfer WHERE to_user = $1 AND filename = $2", to_user, filename)
 
 	// dummy value that will store the id and is not checked (just used to check if no rows)
 	var key string

@@ -16,8 +16,8 @@ import (
 )
 
 // Generates a random 32 character string for encryption purposes
-func generateKey() (string, error) {
-	randomBytes := make([]byte, 32)
+func GenerateKey() (string, error) {
+	randomBytes := make([]byte, 16)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
 		return "", err
@@ -35,7 +35,7 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 	name_of_item := split[len(split)-1]
 
 	// Ecncryption key (randomly generated)
-	key, _ := generateKey()
+	key, _ := GenerateKey()
 
 	// Makes sure user is allowed to send the file before procceding
 
@@ -43,14 +43,16 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 		return nil, false
 	}
 
-	// makes name include the zip
-	name := fmt.Sprintf("%s.zip", database.HashInfo(name_of_item))
 	hashed_key := database.HashInfo(key)
+	fmt.Println(hashed_key)
+	// makes name include the zip
+	name := fmt.Sprintf("%s_%s.zip", hashed_key, database.HashInfo(name_of_item))
+	fmt.Println(path)
 
 	// Encrypts the file
 	encription.ZipEncryptFolder(path, name, key)
-	location := fmt.Sprintf("../temp/%s_%s", hashed_key, name)
-
+	location := fmt.Sprintf("../temp/%s", name)
+	fmt.Println(location)
 	// Sends that file to MEGA
 	cmd := exec.Command("megacmd", "put", location, "mega:/")
 
@@ -69,6 +71,7 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 
 	// Remove file from temp
 	working_dir, _ := os.Getwd()
+
 	temp_location := filepath.Join(working_dir, "../temp")
 	dir, err := ioutil.ReadDir(temp_location)
 	if err != nil {
@@ -91,7 +94,7 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	if !database.UserCanViewTransaction(user, file_name) {
 		return nil, false
 	}
-
+	fmt.Println("Made it past here")
 	// Ecncryption key
 	key := database.RetrieveKey(file_name, user)
 
@@ -99,11 +102,11 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	current_dir, _ := os.Getwd()
 
 	// Destination the file will be downloaded to
-	destination := filepath.Join(current_dir, location, file_name)
+	destination := filepath.Join(current_dir, location)
 	fmt.Println(destination)
 
 	// Formats it for the mega cloud (readjusts the name to fit the hashing)
-	cloud_dir := fmt.Sprintf("mega:/%s_%s", database.HashInfo(key), database.HashInfo(file_name))
+	cloud_dir := fmt.Sprintf("mega:/%s_%s.zip", database.HashInfo(key), database.HashInfo(file_name))
 
 	// Calls cmd command to retrieve the file
 	cmd := exec.Command("megacmd", "get", cloud_dir, destination)
@@ -121,12 +124,10 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
-
-	// Reverts to original name by splitting at zip
-	original_name := strings.Split(file_name, ".zip")
-
+	encryped_name := fmt.Sprintf("%s_%s.zip", database.HashInfo(key), database.HashInfo(file_name))
+	file_location := filepath.joinpath(destination, encryped_name)
 	// Decripts folder
-	err = encription.DecryptZipFolder(destination, original_name[0], key)
+	err = encription.DecryptZipFolder(file_location, file_name, key)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -138,15 +139,19 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	}
 
 	// Removes the copy from the cloud so that no users can access it
-	DeleteFromMega(database.HashInfo(key), file_name)
+	//DeleteFromMega(user, file_name)
 	return nil, true
 }
 
 // Removes the file from the cloud
-func DeleteFromMega(hashed_key, file_name string) {
+func DeleteFromMega(user int, file_name string) {
+	// Ecncryption key
+	key := database.RetrieveKey(file_name, user)
+
+	hashed_key := database.HashInfo(key)
 
 	// Formats it for the mega cloud
-	cloud_dir := fmt.Sprintf("mega:/%s_%s", hashed_key, database.HashInfo(file_name))
+	cloud_dir := fmt.Sprintf("mega:/%s_%s.zip", hashed_key, database.HashInfo(file_name))
 
 	// Calls cmd command to retrieve the file
 	cmd := exec.Command("megacmd", "delete", cloud_dir)

@@ -9,6 +9,7 @@ import (
 )
 
 // Main method for runnning the system
+
 func main() {
 	database.InitializeDatabase()
 	database.HandleAccountStartup()
@@ -39,14 +40,19 @@ func main() {
 func main() {
 
 		key := "passphrasewhichneedstobe32bytes!"
-		encription.ZipEncryptFolder("../testing", "testing.zip", key)
+		encription.ZipEncryptFolder("../testing", "hello.zip", key)
 		if err := encription.DecryptZipFolder("testing.zip", "../output", key); err != nil {
 			fmt.Println("Error decrypting and unzipping folder:", err)
 			return
 		}
 
 	//cloud.UploadToMega("../testing", 1, "adam")
-	//cloud.DownloadFromMega("testing.zip", "")
-	cloud.DeleteFromMega("testing.zip")
+
+	//cloud.DownloadFromMega(1, "testing", "")
+	//cloud.DeleteFromMega("testing.zip")
+	//key, _ := cloud.GenerateKey()
+	//fmt.Println(database.HashInfo(key))
+	key := database.HashInfo("c3e9ff65452d99179781d99a92a590f0")
+	fmt.Println(key)
 }
 */

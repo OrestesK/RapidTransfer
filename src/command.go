@@ -113,8 +113,12 @@ LOOP:
 			fmt.Println("Friend has been deleted")
 			break LOOP
 		case "-recieve":
-			cloud.DownloadFromMega(user, temp.input, "")
-			fmt.Println("File has been received")
+			_, result := cloud.DownloadFromMega(user, temp.input, "")
+			if result {
+				fmt.Println("File has been received")
+			} else {
+				fmt.Println("Filename or item does not not exist within your inbox")
+			}
 			break LOOP
 		case "-friends":
 			friendList := database.GetFriendsList(user)

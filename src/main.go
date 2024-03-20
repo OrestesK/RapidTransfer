@@ -52,7 +52,10 @@ func main() {
 	//cloud.DeleteFromMega("testing.zip")
 	//key, _ := cloud.GenerateKey()
 	//fmt.Println(database.HashInfo(key))
-	key := database.HashInfo("c3e9ff65452d99179781d99a92a590f0")
-	fmt.Println(key)
+	//key := database.HashInfo("c3e9ff65452d99179781d99a92a590f0")
+	working_dir, _ := os.Getwd()
+	zipFilePath := filepath.Join(working_dir, "hello")
+
+	fmt.Println(zipFilePath)
 }
 */

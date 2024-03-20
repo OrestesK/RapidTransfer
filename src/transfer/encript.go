@@ -13,8 +13,9 @@ import (
 // ZipEncryptFolder zips and encrypts a folder or path
 func ZipEncryptFolder(sourceFolder, fileName, key string) error {
 
-	// Items in temp folder will be deleted right after
-	zipFilePath := filepath.Join("../temp", fileName)
+	// Creates the path to the file
+	working_dir, _ := os.Getwd()
+	zipFilePath := filepath.Join(working_dir, fileName)
 
 	// Create a zip file
 	zipFileWriter, err := os.Create(zipFilePath)

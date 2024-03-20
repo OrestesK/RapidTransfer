@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -49,9 +48,11 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 
 	// Encrypts the file
 	encription.ZipEncryptFolder(path, name, key)
-	location := fmt.Sprintf("../temp/%s", name)
+
+	working_dir, _ := os.Getwd()
+
 	// Sends that file to MEGA
-	cmd := exec.Command("megacmd", "put", location, "mega:/")
+	cmd := exec.Command("megacmd", "put", name, "mega:/")
 
 	// Error handing
 	var out bytes.Buffer
@@ -66,20 +67,12 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 	}
 
 	// Remove file from temp
-	working_dir, _ := os.Getwd()
+	temp_zip := filepath.Join(working_dir, name)
 
-	temp_location := filepath.Join(working_dir, "../temp")
-	dir, err := ioutil.ReadDir(temp_location)
+	// Deletes zip folder
+	err = os.RemoveAll(temp_zip)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Loops through directory and removes everything inside
-	for _, d := range dir {
-		err := os.RemoveAll(filepath.Join(temp_location, d.Name()))
-		if err != nil {
-			log.Println(err)
-		}
+		log.Println(err)
 	}
 
 	return nil, true

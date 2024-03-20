@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users
 
 CREATE TABLE IF NOT EXISTS friends
 (
+    id SERIAL PRIMARY KEY,
     user_one INTEGER NOT NULL, 
     user_two INTEGER NOT NULL
 );

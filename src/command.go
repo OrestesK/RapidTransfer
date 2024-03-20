@@ -5,7 +5,10 @@ import (
 	"Rapid/src/database"
 	"fmt"
 	"log"
+	"os"
 	"strings"
+
+	"github.com/jedib0t/go-pretty/table"
 )
 
 // Help command to list information about what you can run
@@ -121,10 +124,7 @@ LOOP:
 			}
 			break LOOP
 		case "-friends":
-			friendList := database.GetFriendsList(user)
-			for _, temp := range friendList {
-				fmt.Println("Friend name: ", temp)
-			}
+			displayFriends(user)
 			fmt.Println("Friends list has been displayed")
 			break LOOP
 		case "-info":
@@ -138,4 +138,17 @@ LOOP:
 			break LOOP
 		}
 	}
+}
+
+func displayFriends(user int) {
+	friendList := database.GetFriendsList(user)
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Name", "Friend Code"})
+	for _, friend := range friendList {
+		t.AppendRows([]table.Row{
+			{friend.Name, friend.FriendCode},
+		})
+	}
+	t.Render()
 }

@@ -2,22 +2,29 @@
 
 Rapid Transfer System is a simple system for transferring files between users using Go and a PostgreSQL database.
 
-## Future Features
+## Am working on
+- Getting dependency binary inside of the project for easy use ? go generate
+- fixing the download from the cloud so that it does not remove the entire current directory... yeah i found out the hard way
+- having go create a temp directory outside of the project for the encryption process
+- adding a box around the friends list and pending transfers list
 
-- Auto ziping folders
-- Imroving file pathing
+
+
+## Future Features
+- ~~Auto ziping folders~~
+- ~~Imroving file pathing~~
 - ~~changing arg parsing to accept no defaults~~
 - ~~Improvement of SQL usage, increase efficiency~~
 - ~~move away from mac addresses and into password authentication~~
 - ~~hash information~~
-- able to send files from anywhere
-- choose where files are recieved
+- ~~able to send files from anywhere~~
+- ~~choose where files are recieved~~
 - ~~more documentation on how it works~~
 - ~~better error handling~~
 
 ## Overview
 
-The Rapid Transfer System is designed for easy and fast file transfers between users. It utilizes Go for the backend logic, a PostgreSQL database for user information, and a network package for handling file transfers.
+The Rapid Transfer System is designed for easy and fast file transfers between users. It utilizes Go for the backend logic, a PostgreSQL database for user information, and MEGA cloud to store the files
 
 ## Features
 

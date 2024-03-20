@@ -48,9 +48,9 @@ func UserCanViewTransaction(userId int, filename string) bool {
 }
 
 // Deletes a transaction record based on the given id.
-func DeleteTransaction(id string) {
+func DeleteTransaction(key string) {
 	// Deletes from table
-	_, err := conn.Exec("DELETE * FROM transfer WHERE id = $1", id)
+	_, err := conn.Exec("DELETE FROM transfer WHERE key = $1", key)
 
 	// Logs the error
 	if err != nil {

@@ -160,5 +160,6 @@ func DeleteFromMega(user int, file_name string) {
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
+	database.DeleteTransaction(key)
 
 }

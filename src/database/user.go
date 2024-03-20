@@ -100,7 +100,6 @@ func HandleAccountStartup() {
 			os.Exit(1)
 		}
 	}
-	//fmt.Printf("Name: %s password: %s MacAddr: %s\n", name, password, macAddr)
 	err = setCurrentUsersId(name, password, macAddr)
 	if err != nil {
 		log.Fatal(err)

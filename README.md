@@ -1,42 +1,36 @@
-# Rapid Transfer System
+# Rapid
+Originally this project was called RapidTransfer and was created within 24 hours. It was capable of adding friends, and sharing just files to eachother using peer to peer networking. I took that project and changed/added some essential features
+- Better documentation, pathing and allowing users to send folders
+- cleaner queries
+- Cloud is used instead of p2p to save files
+- Encyption based on AES and hashing of all personal information
+- More functionality
 
-Rapid Transfer System is a simple system for transferring files between users using Go and a PostgreSQL database.
+## Why Cloud?
+Transfering files between users using p2p is cool but there are some issues that come with that. Here are some of the main ones that I had thought about
+1. Disconnection while sending files due to exiting the program or turning off device
+2. Need for both users to be active at the same time
+3. Higher level of understanding needed to be able to reproduce the code
 
-## Am working on
-- Getting dependency binary inside of the project for easy use ? go generate
-- ~~fixing the download from the cloud so that it does not remove the entire current directory... yeah i found out the hard way~~
-- ~~having go create a temp directory outside of the project for the encryption process~~
-- ~~adding a box around the friends list and pending transfers list~~
+Implementing Cloud allows these added benifits
+- Allow for easy access of files
+- Both users do not have to be online
+- Once the sender sends the file, they can remove it locally from their system
+- Easier to read the code (Cloud made things very easy to write)
 
-
-
-## Future Features
-- ~~Auto ziping folders~~
-- ~~Imroving file pathing~~
-- ~~changing arg parsing to accept no defaults~~
-- ~~Improvement of SQL usage, increase efficiency~~
-- ~~move away from mac addresses and into password authentication~~
-- ~~hash information~~
-- ~~able to send files from anywhere~~
-- ~~choose where files are recieved~~
-- ~~more documentation on how it works~~
-- ~~better error handling~~
-
-## Overview
-
-The Rapid Transfer System is designed for easy and fast file transfers between users. It utilizes Go for the backend logic, a PostgreSQL database for user information, and MEGA cloud to store the files
+## Now
+Rapid is a faster and better way to share files between friends without having to worry about other people getting access to them. Each file is encrypted and uploaded to the cloud with a unique index. User information is stored using SQL aswell as information about the transaction that allows the files to be decrypted once downloaded back onto a users machine. User authentication exists which makes sure that nobody can gain access to your account. Mac addresses are used as a double authentication to make sure that a user would need to be on the same device that the account was created on to access their account.
 
 ## Features
+- File sharing between users
+- Friend functionality so users can add and remove friends
+- Built in encryption and decryption using AES with randomized keys in order to ensure uniqueness
+- Able to view ones own inbox and choose to remove or accept incoming files
 
-- Initialize and manage the underlying PostgreSQL database.
-- Handle account startup tasks.
-- Manage user details and friends.
-- Send and receive files between users.
-- View and manage pending transfers.
 
+
+#### Change all below here
 ## Getting Started
-
-### Prerequisites
 
 Make sure you have Go installed on your system. You can download it [here](https://golang.org/dl/).
 

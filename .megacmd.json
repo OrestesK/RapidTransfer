@@ -1,8 +1,0 @@
-{
-    "User" : "jpforzanojr@gmail.com",
-    "Password" : "Forzano17**",
-    "DownloadWorkers" : 4,
-    "UploadWorkers" : 4,
-    "SkipSameSize" : true,
-    "Verbose" : 1
-}

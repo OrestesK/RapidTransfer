@@ -27,28 +27,24 @@ Rapid is a faster and better way to share files between friends without having t
 - Built in encryption and decryption using AES with randomized keys in order to ensure uniqueness
 - Able to view ones own inbox and choose to remove or accept incoming files
 
-
-
-#### Change all below here
 ## Getting Started
+1. Make sure you have Go installed on your system. You can download it [here](https://golang.org/dl/).
+2. Clone the repository ```git clone https://github.com/your-username/rapid-transfer-system.git```
+3. Download the **CORRECT** binary of MEGACMD and make sure it is **included** within your path [here](https://github.com/t3rm1n4l/megacmd/releases/tag/0.016)
+4. Create a file ~/.megacmd.json inside of your user folder. Here is an example **The user information will either be provided by the hoster or you will have to create yourself**
+```
+{
+    "User" : "MEGA_USERNAME",
+    "Password" : "MEGA_PASSWORD",
+    "DownloadWorkers" : 4,
+    "UploadWorkers" : 4,
+    "SkipSameSize" : true,
+    "Verbose" : 1
+}
+```
+5. Enter in the SQL credentials inside of the private.go file **This will either be provided by the hoster or you will have to create yourself**
 
-Make sure you have Go installed on your system. You can download it [here](https://golang.org/dl/).
-
-### Installation
-
-1. Clone the repository:
-
-   ```
-   git clone https://github.com/your-username/rapid-transfer-system.git
-
-   Navigate to the project directory:
-
-   Download binary using make
-   make [windows, linux, darwin] 
-   ```
-2. Connect your SQL credentials inside of the init_database file (Will later change to make it easier to use)
-
-Usage
+## Usage
 Command Line Flags
 ```
 	-send user # Used to send file to user, must use -file path flag to specify the file
@@ -61,22 +57,17 @@ Command Line Flags
 	-friends # Used to list all of your friends and their friend id
 	-info # Used to display your account information
 ```
-Examples (After building the binary)
+Examples **After completing all the steps to get the binary working**
+```
 Send a File:
-
 Rapid -send adam -file memes.png
-
 Receive a File:
-
 Rapid -recieve memes.png
-
 View Pending Transfers:
-
 Rapid -inbox
-
 Delete a Friend:
-
 Rapid -add adam
+```
 
 Add a Friend:
 

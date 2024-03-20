@@ -104,7 +104,7 @@ LOOP:
 			fmt.Println("Friend has been added")
 			break LOOP
 		case "-inbox":
-			database.GetPendingTransfers(user)
+			displayInbox(user)
 			fmt.Println("Inbox has been displayed")
 			break LOOP
 		case "-delete":
@@ -128,7 +128,7 @@ LOOP:
 			fmt.Println("Friends list has been displayed")
 			break LOOP
 		case "-info":
-			fmt.Printf("Username: %s, Friend code: %s\n", database.GetUserNameByID(user), database.GetUserFriendCode(user))
+			fmt.Printf("| Username   %s | Friend code   %s |\n", database.GetUserNameByID(user), database.GetUserFriendCode(user))
 			break LOOP
 		case "-help":
 			help()
@@ -140,14 +140,29 @@ LOOP:
 	}
 }
 
+// displays friends list
 func displayFriends(user int) {
-	friendList := database.GetFriendsList(user)
+	friendsList := database.GetFriendsList(user)
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Name", "Friend Code"})
-	for _, friend := range friendList {
+	for _, friend := range friendsList {
 		t.AppendRows([]table.Row{
 			{friend.Name, friend.FriendCode},
+		})
+	}
+	t.Render()
+}
+
+// displays inbox
+func displayInbox(user int) {
+	inbox := database.GetPendingTransfers(user)
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"From", "File Name"})
+	for _, transaction := range inbox {
+		t.AppendRows([]table.Row{
+			{transaction.From_user, transaction.File_name},
 		})
 	}
 	t.Render()

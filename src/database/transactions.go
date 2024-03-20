@@ -7,24 +7,36 @@ import (
 	"github.com/jackc/pgx"
 )
 
+type Transaction struct {
+	From_user string
+	File_name string
+}
+
 // GetPendingTransfers retrieves pending file transfer requests for a given user id.
-func GetPendingTransfers(user_id int) {
+func GetPendingTransfers(user_id int) (inbox []Transaction) {
 
 	// Retrieves pending requests from the database
-	rows, _ := conn.Query("SELECT from_user, filename FROM transfer WHERE to_user=$1", user_id)
+	rows, err := conn.Query("SELECT from_user, filename FROM transfer WHERE to_user=$1", user_id)
 
-	// Prints out information for each pending transfer
-	for rows.Next() {
-		var host, filename string
-		err := rows.Scan(&host, &filename)
-
-		// Handles the error while scanning the row
-		if err != nil {
-			fmt.Println("Error scanning row:", err)
-			break
-		}
-		fmt.Printf("From: %s Filename: %s\n", host, filename)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil
 	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var transaction Transaction
+		if err := rows.Scan(&transaction.From_user, &transaction.File_name); err != nil {
+			fmt.Println("Error scanning row:", err)
+			continue
+		}
+		inbox = append(inbox, transaction)
+	}
+	if err := rows.Err(); err != nil {
+		fmt.Println("Error iterating over rows:", err)
+	}
+
+	return inbox
 }
 
 /*

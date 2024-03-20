@@ -100,9 +100,10 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 
 	// Gets the current directory the user is in
 	current_dir, _ := os.Getwd()
+	encryped_name := fmt.Sprintf("%s_%s.zip", database.HashInfo(key), database.HashInfo(file_name))
 
 	// Destination the file will be downloaded to
-	destination := filepath.Join(current_dir, location)
+	destination := filepath.Join(current_dir, location, encryped_name)
 	fmt.Println(destination)
 
 	// Formats it for the mega cloud (readjusts the name to fit the hashing)
@@ -124,7 +125,7 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
-	encryped_name := fmt.Sprintf("%s_%s.zip", database.HashInfo(key), database.HashInfo(file_name))
+
 	file_location := filepath.Join(destination, encryped_name)
 	// Decripts folder
 	err = encription.DecryptZipFolder(file_location, file_name, key)

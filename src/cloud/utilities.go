@@ -44,15 +44,12 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 	}
 
 	hashed_key := database.HashInfo(key)
-	fmt.Println(hashed_key)
 	// makes name include the zip
 	name := fmt.Sprintf("%s_%s.zip", hashed_key, database.HashInfo(name_of_item))
-	fmt.Println(path)
 
 	// Encrypts the file
 	encription.ZipEncryptFolder(path, name, key)
 	location := fmt.Sprintf("../temp/%s", name)
-	fmt.Println(location)
 	// Sends that file to MEGA
 	cmd := exec.Command("megacmd", "put", location, "mega:/")
 
@@ -64,7 +61,6 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 
 	// Runs cmd command
 	err := cmd.Run()
-	fmt.Println(cmd)
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
@@ -94,7 +90,6 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	if !database.UserCanViewTransaction(user, file_name) {
 		return nil, false
 	}
-	fmt.Println("Made it past here")
 	// Ecncryption key
 	key := database.RetrieveKey(file_name, user)
 
@@ -104,7 +99,6 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 
 	// Destination the file will be downloaded to
 	destination := filepath.Join(current_dir, location, encryped_name)
-	fmt.Println(destination)
 
 	// Formats it for the mega cloud (readjusts the name to fit the hashing)
 	cloud_dir := fmt.Sprintf("mega:/%s_%s.zip", database.HashInfo(key), database.HashInfo(file_name))
@@ -121,14 +115,12 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 
 	// Runs cmd command
 	err := cmd.Run()
-	fmt.Println(cmd)
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
 
-	file_location := filepath.Join(destination, encryped_name)
 	// Decripts folder
-	err = encription.DecryptZipFolder(file_location, file_name, key)
+	err = encription.DecryptZipFolder(destination, file_name, key)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -140,7 +132,7 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	}
 
 	// Removes the copy from the cloud so that no users can access it
-	//DeleteFromMega(user, file_name)
+	DeleteFromMega(user, file_name)
 	return nil, true
 }
 
@@ -165,7 +157,6 @@ func DeleteFromMega(user int, file_name string) {
 
 	// Runs cmd command
 	err := cmd.Run()
-	fmt.Println(cmd)
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}

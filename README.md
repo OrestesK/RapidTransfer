@@ -31,18 +31,9 @@ Rapid is a faster and better way to share files between friends without having t
 1. Make sure you have Go installed on your system. You can download it [here](https://golang.org/dl/).
 2. Clone the repository ```git clone https://github.com/your-username/rapid-transfer-system.git```
 3. Download the **CORRECT** binary of MEGACMD and make sure it is **included** within your path [here](https://github.com/t3rm1n4l/megacmd/releases/tag/0.016)
-4. Create a file ~/.megacmd.json inside of your user folder. Here is an example **The user information will either be provided by the hoster or you will have to create yourself**
-```
-{
-    "User" : "MEGA_USERNAME",
-    "Password" : "MEGA_PASSWORD",
-    "DownloadWorkers" : 4,
-    "UploadWorkers" : 4,
-    "SkipSameSize" : true,
-    "Verbose" : 1
-}
-```
-5. Enter in the SQL credentials inside of the private.go file **This will either be provided by the hoster or you will have to create yourself**
+4. Use make prep, build then make depending on the OS you are on to download dependencies and the binary onto your system. You will need to visit the Rapid folder hosted in your user later
+5. Enter in the information inside of the megacmd file **The user information will either be provided by the hoster or you will have to create yourself**
+6. Enter in the SQL credentials inside of the sql file **This will either be provided by the hoster or you will have to create yourself**
 
 ## Usage
 Command Line Flags

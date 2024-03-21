@@ -13,9 +13,11 @@ type Transaction struct {
 
 // GetPendingTransfers retrieves pending file transfer requests for a given user id.
 func GetPendingTransfers(user_id int) (inbox []Transaction) {
-
 	// Retrieves pending requests from the database
-	rows, err := conn.Query("SELECT from_user, filename FROM transfer WHERE to_user=$1", user_id)
+	rows, err := conn.Query(`SELECT name, filename
+	FROM transfer 
+	INNER JOIN users ON transfer.from_user = users.id
+	WHERE to_user=$1`, user_id)
 
 	if err != nil {
 		fmt.Println("Error:", err)

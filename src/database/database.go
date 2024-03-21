@@ -1,14 +1,23 @@
 package database
 
 import (
-	private "Rapid"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/jackc/pgx"
 )
+
+type Sql struct {
+	Host     string
+	Port     uint16
+	Database string
+	User     string
+	Password string
+}
 
 var conn *pgx.Conn
 var connMutex sync.Mutex
@@ -21,13 +30,20 @@ func GetConn() (*pgx.Conn, error) {
 	if conn != nil {
 		return conn, nil
 	}
+	home, _ := os.UserHomeDir()
+	directory := filepath.Join(home, "Rapid/.sql.json")
 
+	var sql Sql
+	err := parseSqlFile(&sql, directory)
+	if err != nil {
+		fmt.Println(err)
+	}
 	connConfig := pgx.ConnConfig{
-		Host:     private.Host,
-		Port:     private.Port,
-		Database: private.Database,
-		User:     private.User,
-		Password: private.DatabasePassword,
+		Host:     sql.Host,
+		Port:     sql.Port,
+		Database: sql.Database,
+		User:     sql.User,
+		Password: sql.Password,
 	}
 
 	newConn, err := pgx.Connect(connConfig)
@@ -37,6 +53,18 @@ func GetConn() (*pgx.Conn, error) {
 
 	conn = newConn
 	return conn, nil
+}
+
+func parseSqlFile(sql *Sql, path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(data, &sql)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Inits all of the tables for the database

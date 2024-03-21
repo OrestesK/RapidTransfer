@@ -67,7 +67,7 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 	// Runs cmd command
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return err, false
 	}
 
 	// Remove file from temp
@@ -118,7 +118,7 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	cmd.Stderr = &stderr
 
 	// Runs cmd command
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 	}
@@ -136,7 +136,7 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	}
 
 	// Removes the copy from the cloud so that no users can access it
-	_, err := DeleteFromMega(user, file_name)
+	_, err = DeleteFromMega(user, file_name)
 	if err != nil {
 		return err, false
 	}
@@ -144,7 +144,7 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 }
 
 // Removes the file from the cloud
-func DeleteFromMega(user int, file_name string) (bool, err) {
+func DeleteFromMega(user int, file_name string) (bool, error) {
 	// Ecncryption key
 	key, err := database.RetrieveKey(file_name, user)
 	if err != nil {
@@ -170,12 +170,15 @@ func DeleteFromMega(user int, file_name string) (bool, err) {
 	cmd.Stderr = &stderr
 
 	// Runs cmd command
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return false, err
 	}
-	database.DeleteTransaction(key)
+	err = database.DeleteTransaction(key)
 
+	if err != nil {
+		return false, nil
+	}
 	return true, nil
 
 }

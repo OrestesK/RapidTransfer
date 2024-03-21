@@ -13,15 +13,13 @@ func AddFriend(friendCode string, sender_id int) (bool, error) {
 	err := conn.QueryRow("SELECT id, name FROM users WHERE friend_code=$1;", friendCode).Scan(&to_friend_id, &friend_name)
 
 	// Throws error if user does not exist
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
+	if err != nil || to_friend_id == 0 {
+		return false, nil
 	}
 
 	isFriend := AreMutualFriends(sender_id, to_friend_id)
 	if isFriend {
-		return true, nil
+		return false, nil
 	}
 
 	// New user is added
@@ -35,7 +33,7 @@ func AddFriend(friendCode string, sender_id int) (bool, error) {
 
 // DeleteFriend deletes a one-way friendship between two users.
 func DeleteFriend(senderid int, recieverName string) (bool, error) {
-	_, err := conn.Exec("DELETE FROM friends WHERE (user_one=$1 AND user_two=$2) OR user_one=$2 AND user_two=$1) ", senderid, GetUserID(recieverName))
+	_, err := conn.Exec("DELETE FROM friends WHERE (user_one=$1 AND user_two=$2) OR (user_one=$2 AND user_two=$1) ", senderid, GetUserID(recieverName))
 	if err != nil {
 		return false, err
 	}
@@ -51,7 +49,6 @@ func IsFriend(user_one_id int, user_two_id int) bool {
 
 	WHERE friends.user_one=$1 AND friends.user_two=$2`, user_one_id, user_two_id).Scan(&temp)
 	if err == sql.ErrNoRows || temp == 0 {
-		fmt.Println(temp)
 		return false
 	}
 	return true

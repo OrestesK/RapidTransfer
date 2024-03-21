@@ -120,7 +120,7 @@ LOOP:
 			}
 
 			if !result {
-				fmt.Println("There does not exist a user with that friend code.\n")
+				fmt.Println("There does not exist a user with that friend code.")
 
 			}
 

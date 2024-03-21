@@ -67,6 +67,7 @@ func DeleteTransaction(key string) error {
 	if err != nil {
 		return err
 	}
+	return nil
 }
 
 /*

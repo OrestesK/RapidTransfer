@@ -37,7 +37,6 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 	key, _ := GenerateKey()
 
 	// Makes sure user is allowed to send the file before procceding
-
 	if !database.PerformTransaction(from_user_id, user_to, name_of_item, key) {
 		return nil, false
 	}
@@ -89,8 +88,10 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 		return nil, false
 	}
 	// Ecncryption key
-	key := database.RetrieveKey(file_name, user)
-
+	key, err := database.RetrieveKey(file_name, user)
+	if err != nil {
+		return err, false
+	}
 	// Gets the current directory the user is in
 	current_dir, _ := os.Getwd()
 	encryped_name := fmt.Sprintf("%s_%s.zip", database.HashInfo(key), database.HashInfo(file_name))
@@ -135,15 +136,20 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	}
 
 	// Removes the copy from the cloud so that no users can access it
-	DeleteFromMega(user, file_name)
+	_, err := DeleteFromMega(user, file_name)
+	if err != nil {
+		return err, false
+	}
 	return nil, true
 }
 
 // Removes the file from the cloud
-func DeleteFromMega(user int, file_name string) {
+func DeleteFromMega(user int, file_name string) (bool, err) {
 	// Ecncryption key
-	key := database.RetrieveKey(file_name, user)
-
+	key, err := database.RetrieveKey(file_name, user)
+	if err != nil {
+		return false, err
+	}
 	hashed_key := database.HashInfo(key)
 
 	// Formats it for the mega cloud
@@ -166,8 +172,10 @@ func DeleteFromMega(user int, file_name string) {
 	// Runs cmd command
 	err := cmd.Run()
 	if err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return false, err
 	}
 	database.DeleteTransaction(key)
+
+	return true, nil
 
 }

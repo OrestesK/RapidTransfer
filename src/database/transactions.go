@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/jackc/pgx"
 )
@@ -60,13 +59,13 @@ func UserCanViewTransaction(userId int, filename string) bool {
 }
 
 // Deletes a transaction record based on the given id.
-func DeleteTransaction(key string) {
+func DeleteTransaction(key string) error {
 	// Deletes from table
 	_, err := conn.Exec("DELETE FROM transfer WHERE key = $1", key)
 
 	// Logs the error
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 }
 
@@ -81,22 +80,23 @@ func PerformTransaction(from_user_id int, user_to string, filename string, key s
 		// Inserts the transaction record into the database
 		_, err := conn.Exec("INSERT INTO transfer (from_user, to_user, key, filename) VALUES ($1,$2,$3,$4)", from_user_id, to_user_id, key, filename)
 		if err != nil {
-			log.Fatalf("Error inserting transfer data: %s", err)
+			fmt.Println(err)
+			return false
 		}
 		return true
 	}
 	return false
 }
 
-func RetrieveKey(filename string, to_user int) string {
+func RetrieveKey(filename string, to_user int) (string, error) {
 	row := conn.QueryRow("SELECT key FROM transfer WHERE to_user = $1 AND filename = $2", to_user, filename)
 
 	// dummy value that will store the id and is not checked (just used to check if no rows)
 	var key string
 	err := row.Scan(&key)
 	if err != nil {
-		log.Fatal(err)
+		return "", err
 	}
 
-	return key
+	return key, nil
 }

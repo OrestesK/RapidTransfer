@@ -18,10 +18,7 @@ var current_user int
 
 // Retrieves a user's name based on their id, which is passed in
 func GetUserNameByID(id int) (userName string) {
-	err := conn.QueryRow("SELECT name FROM users WHERE id=$1", id).Scan(&userName)
-	if err != nil {
-		log.Fatalf("Could not find user with id=%s", id)
-	}
+	conn.QueryRow("SELECT name FROM users WHERE id=$1", id).Scan(&userName)
 	return
 }
 

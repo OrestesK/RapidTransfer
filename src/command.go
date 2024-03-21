@@ -88,7 +88,7 @@ LOOP:
 				}
 			}
 			if !sent {
-				log.Fatal("Need to specify a file to send\n")
+				fmt.Println("Need to specify a file to send")
 			}
 			break LOOP
 		case "-file":
@@ -110,24 +110,48 @@ LOOP:
 				}
 			}
 			if !sent {
-				log.Fatal("Need to specify a person to send the file to\n")
+				fmt.Println("Need to specify a person to send the file to")
 			}
 			break LOOP
 		case "-add":
-			database.AddFriend(temp.input, user)
-			fmt.Println("Friend has been added")
+			result, err := database.AddFriend(temp.input, user)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			if !result {
+				fmt.Println("There does not exist a user with that friend code.\n")
+
+			}
+
+			if result {
+				fmt.Println("Friend has been added")
+			}
+
 			break LOOP
 		case "-inbox":
 			displayInbox(user)
 			fmt.Println("Inbox has been displayed")
 			break LOOP
 		case "-delete":
-			cloud.DeleteFromMega(user, temp.input)
-			fmt.Println("File has been deleted")
+			result, err := cloud.DeleteFromMega(user, temp.input)
+			if err != nil {
+				fmt.Println(err)
+			}
+			if result {
+				fmt.Println("File has been deleted")
+			} else {
+				fmt.Println("Could not delete the file from the inbox")
+			}
 			break LOOP
 		case "-boot":
-			database.DeleteFriend(user, temp.input)
-			fmt.Println("Friend has been deleted")
+			result, err := database.DeleteFriend(user, temp.input)
+			if err != nil {
+				fmt.Println("Failed to remove friend", err)
+			}
+			if result {
+				fmt.Println("Friend has been deleted")
+			}
 			break LOOP
 		case "-recieve":
 			_, result := cloud.DownloadFromMega(user, temp.input, "")

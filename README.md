@@ -38,15 +38,15 @@ Rapid is a faster and better way to share files between friends without having t
 ## Usage
 Command Line Flags
 ```
-	-send user # Used to send file to user, must use -file path flag to specify the file
-	-file path # Used to specify the path to the file you are sending, must be used with -send
-	-add user_id # Used to add a friend, user_id is the id you retrieve when you use -info
-	-inbox # Used to retrive information about files you have yet to accept
-	-delete filename # Used to remove a file from your inbox
-	-boot friend_id # Used to remove a friend from your friends list
-	-recieve file # Used to accept a file being sent to you
-	-friends # Used to list all of your friends and their friend id
-	-info # Used to display your account information
+-send user # Used to send file to user, must use -file path flag to specify the file
+-file path # Used to specify the path to the file you are sending, must be used with -send
+-add user_id # Used to add a friend, user_id is the id you retrieve when you use -info
+-inbox # Used to retrive information about files you have yet to accept
+-delete filename # Used to remove a file from your inbox
+-boot friend_id # Used to remove a friend from your friends list
+-recieve file # Used to accept a file being sent to you
+-friends # Used to list all of your friends and their friend id
+-info # Used to display your account information
 ```
 Examples **After completing all the steps to get the binary working**
 ```

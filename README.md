@@ -19,7 +19,7 @@ Implementing Cloud allows these added benifits
 - Easier to read the code (Cloud made things very easy to write)
 
 ## Now
-Rapid is a faster and better way to share files between friends without having to worry about other people getting access to them. Each file is encrypted and uploaded to the cloud with a unique index. User information is stored using SQL aswell as information about the transaction that allows the files to be decrypted once downloaded back onto a users machine. User authentication exists which makes sure that nobody can gain access to your account. Mac addresses are used as a double authentication to make sure that a user would need to be on the same device that the account was created on to access their account.
+Rapid is a faster and better way to share files between friends without having to worry about other people getting access to them. Each file is encrypted and uploaded to the cloud with a unique index. User information is stored using SQL aswell as information about the transaction that allows the files to be decrypted once downloaded back onto a users machine. User authentication exists which makes sure that nobody can gain access to your account. UUID is used as a double authentication to make sure that a user would need to be on the same device that the account was created on to access their account.
 
 ## Features
 - File sharing between users

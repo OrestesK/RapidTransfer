@@ -75,8 +75,15 @@ LOOP:
 			}
 			for _, search := range flags {
 				if strings.Compare(search.flag, "-file") == 0 {
-					cloud.UploadToMega(search.input, user, temp.input)
-					fmt.Println("File has been sent and will be waiting to be accepted")
+					err, result := cloud.UploadToMega(search.input, user, temp.input)
+					if err != nil {
+						fmt.Println(err)
+					}
+					if result {
+						fmt.Println("File has been sent and will be waiting to be accepted")
+					} else {
+						fmt.Println("The requested user either does not exist or is not added")
+					}
 					sent = true
 				}
 			}
@@ -90,8 +97,15 @@ LOOP:
 			}
 			for _, search := range flags {
 				if strings.Compare(search.flag, "-send") == 0 {
-					cloud.UploadToMega(search.input, user, temp.input)
-					fmt.Println("File has been sent and is waiting to be accepted")
+					err, result := cloud.UploadToMega(search.input, user, temp.input)
+					if err != nil {
+						fmt.Println(err)
+					}
+					if result {
+						fmt.Println("File has been sent and will be waiting to be accepted")
+					} else {
+						fmt.Println("The requested user either does not exist or is not added")
+					}
 					sent = true
 				}
 			}

@@ -51,9 +51,14 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 
 	working_dir, _ := os.Getwd()
 
-	// Sends that file to MEGA
-	cmd := exec.Command("megacmd", "put", name, "mega:/")
+	// Handles megacmd config
+	home, _ := os.UserHomeDir()
+	directory := filepath.Join(home, "Rapid/.megacmd.json")
+	config := fmt.Sprintf(`-conf=%s`, directory)
 
+	// Sends that file to MEGA
+	cmd := exec.Command("megacmd", config, "put", name, "mega:/")
+	cmd.Dir = working_dir
 	// Error handing
 	var out bytes.Buffer
 	var stderr bytes.Buffer
@@ -96,8 +101,13 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 	// Formats it for the mega cloud (readjusts the name to fit the hashing)
 	cloud_dir := fmt.Sprintf("mega:/%s_%s.zip", database.HashInfo(key), database.HashInfo(file_name))
 
+	// Handles megacmd config
+	home, _ := os.UserHomeDir()
+	directory := filepath.Join(home, "Rapid/.megacmd.json")
+	config := fmt.Sprintf(`-conf=%s`, directory)
+
 	// Calls cmd command to retrieve the file
-	cmd := exec.Command("megacmd", "get", cloud_dir, destination)
+	cmd := exec.Command("megacmd", config, "get", cloud_dir, destination)
 	cmd.Dir = current_dir
 
 	// Error handing
@@ -139,8 +149,13 @@ func DeleteFromMega(user int, file_name string) {
 	// Formats it for the mega cloud
 	cloud_dir := fmt.Sprintf("mega:/%s_%s.zip", hashed_key, database.HashInfo(file_name))
 
+	// Handles megacmd config
+	home, _ := os.UserHomeDir()
+	directory := filepath.Join(home, "Rapid/.megacmd.json")
+	config := fmt.Sprintf(`-conf=%s`, directory)
+
 	// Calls cmd command to retrieve the file
-	cmd := exec.Command("megacmd", "delete", cloud_dir)
+	cmd := exec.Command("megacmd", config, "delete", cloud_dir)
 
 	// Error handing
 	var out bytes.Buffer

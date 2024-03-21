@@ -56,11 +56,12 @@ func DeleteFriend(senderid int, recieverName string) {
 func IsFriend(user_one_id int, user_two_id int) bool {
 	var temp int
 	err := conn.QueryRow(`
-	SELECT friends.id 
-	FROM friends 
-	INNER JOIN users ON friends.user_one=users.id AND friends.user_two=users.id 
-	WHERE friends.user_one=%s AND friends.user_two=%s`, user_one_id, user_two_id).Scan(&temp)
+	SELECT id 
+	FROM friends
+
+	WHERE friends.user_one=$1 AND friends.user_two=$2`, user_one_id, user_two_id).Scan(&temp)
 	if err == sql.ErrNoRows || temp == 0 {
+		fmt.Println(temp)
 		return false
 	}
 	return true

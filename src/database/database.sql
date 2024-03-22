@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS users
     name VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
     friend_code VARCHAR(100), 
-    mac_address VARCHAR(100)
+    uuid VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS friends

@@ -8,11 +8,55 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"net"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 )
+
+/*
+Returns users UUID by first checking what system they are on
+*/
+func getUUID() (string, error) {
+	if runtime.GOOS == "windows" {
+		cmd := exec.Command("wmic", "path", "win32_computersystemproduct", "get", "UUID")
+		var b []byte
+		b, err := cmd.CombinedOutput()
+		out := string(b)
+
+		if err != nil {
+			return "", nil
+		} else {
+			result := strings.Split(out, "\n")
+			return result[1], nil
+		}
+	} else if runtime.GOOS == "darwin" {
+		cmd := exec.Command("uuidgen")
+		var b []byte
+		b, err := cmd.CombinedOutput()
+		out := string(b)
+
+		if err != nil {
+			return "", nil
+		} else {
+			return out, nil
+		}
+	} else if runtime.GOOS == "linux" {
+		cmd := exec.Command("findmnt", "/", "-o", "UUID", "-n")
+		var b []byte
+		b, err := cmd.CombinedOutput()
+		out := string(b)
+
+		if err != nil {
+			return "", nil
+		} else {
+			return out, nil
+		}
+	} else {
+		return "", nil
+	}
+}
 
 var current_user int
 
@@ -63,16 +107,19 @@ func HashInfo(text string) string {
 func HandleAccountStartup() {
 	// Inits all the information
 	var name, password string
-	// Gets the mac address
-	macAddr, _ := getMacAddress()
+	// Gets the uuid address
+	uuid, err := getUUID()
+	if err != nil {
+		fmt.Println(err)
+	}
 
-	// Hashes that mac address to compare
-	macAddr = HashInfo(macAddr)
+	// Hashes that uuid to compare
+	uuid = HashInfo(uuid)
 
 	fmt.Print("Enter your username and password to login or create to create a new user\nExpected: username password or create\n")
 
 	// May look weird but it does check if the input was create and if it isnt, just stores the username
-	_, err := fmt.Scan(&name)
+	_, err = fmt.Scan(&name)
 	if strings.Compare(name, "create") == 0 {
 		// User entered create
 		fmt.Println("You have decided to create a user, if you have other users they will still be accesible")
@@ -80,7 +127,7 @@ func HandleAccountStartup() {
 		_, err := fmt.Scan(&name, &password)
 
 		// Checks to make sure we cannot create multiple users on the same device with the same name
-		for alreadyExistsCheck(name, macAddr) != -1 {
+		for alreadyExistsCheck(name, uuid) != -1 {
 			fmt.Println("Duplicate creation of user on one machine caught. Change username to procceed")
 			_, err = fmt.Scan(&name)
 		}
@@ -88,7 +135,7 @@ func HandleAccountStartup() {
 			os.Exit(1)
 		}
 		password = HashInfo(password)
-		createAccount(name, password, macAddr)
+		createAccount(name, password, uuid)
 	} else {
 		_, err = fmt.Scan(&password)
 		//fmt.Println(password)
@@ -97,39 +144,23 @@ func HandleAccountStartup() {
 			os.Exit(1)
 		}
 	}
-	err = setCurrentUsersId(name, password, macAddr)
+	err = setCurrentUsersId(name, password, uuid)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func getMacAddress() (string, error) {
-	interfaces, err := net.Interfaces()
-	if err != nil {
-		return "", err
-	}
-
-	// Iterate through the network interfaces to find the MAC address
-	for _, intf := range interfaces {
-		if intf.HardwareAddr != nil {
-			return intf.HardwareAddr.String(), nil
-		}
-	}
-
-	return "", fmt.Errorf("MAC address not found")
-}
-
 /*
-Creates an account in the database with specifid username/macaddr.
-MacAddr is unique to the computer, and is used on startup to indentify the pc.
+Creates an account in the database with specifid username/uuid.
+uuid is unique to the computer, and is used on startup to indentify the pc.
 */
-func createAccount(username string, password string, macAddress string) {
+func createAccount(username string, password string, uuid string) {
 
 	// Creates the friend code so that this user can be added as a friend
 	code := generateFriendCode()
 
 	// Inserts that data inside of the datbase
-	_, err := conn.Exec("INSERT INTO users (name, password, friend_code, mac_address) VALUES ($1, $2, $3, $4)", username, password, code, macAddress)
+	_, err := conn.Exec("INSERT INTO users (name, password, friend_code, uuid) VALUES ($1, $2, $3, $4)", username, password, code, uuid)
 	if err != nil {
 		fmt.Printf("Failed to create account", err)
 	}
@@ -159,18 +190,18 @@ func GetUserID(name string) (userID int) {
 }
 
 // Retrieves a user's id based on their name, which is passed in
-func alreadyExistsCheck(name string, macAddr string) (userID int) {
-	err := conn.QueryRow("SELECT id FROM users WHERE name=$1 AND mac_address=$2", name, macAddr).Scan(&userID)
+func alreadyExistsCheck(name string, uuid string) (userID int) {
+	err := conn.QueryRow("SELECT id FROM users WHERE name=$1 AND uuid=$2", name, uuid).Scan(&userID)
 	if err != nil {
 		return -1
 	}
 	return
 }
-func setCurrentUsersId(name string, password string, macAddr string) error {
+func setCurrentUsersId(name string, password string, uuid string) error {
 	row := conn.QueryRow(
 		`SELECT id 
 		FROM users 
-		WHERE name=$1 AND password=$2 AND mac_address=$3`, name, password, macAddr)
+		WHERE name=$1 AND password=$2 AND uuid=$3`, name, password, uuid)
 
 	err := row.Scan(&current_user)
 

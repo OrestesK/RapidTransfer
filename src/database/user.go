@@ -6,9 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
-	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -92,8 +90,6 @@ func HashInfo(text string) string {
 
 	// Bytes to string
 	h.Write([]byte(text))
-
-	// sum it
 	z := h.Sum(nil)
 
 	hashString := hex.EncodeToString(z)
@@ -102,68 +98,32 @@ func HashInfo(text string) string {
 }
 
 /*
-* Called on process start. This will find the user if it exists in the database. If not, it will ask to create an account.
- */
-func HandleAccountStartup() {
-	// Inits all the information
-	var name, password string
-	// Gets the uuid address
-	uuid, err := getUUID()
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	// Hashes that uuid to compare
-	uuid = HashInfo(uuid)
-
-	fmt.Print("Enter your username and password to login or create to create a new user\nExpected: username password or create\n")
-
-	// May look weird but it does check if the input was create and if it isnt, just stores the username
-	_, err = fmt.Scan(&name)
-	if strings.Compare(name, "create") == 0 {
-		// User entered create
-		fmt.Println("You have decided to create a user, if you have other users they will still be accesible")
-		fmt.Println("Enter your username and password to get started\nExpected: username password")
-		_, err := fmt.Scan(&name, &password)
-
-		// Checks to make sure we cannot create multiple users on the same device with the same name
-		for alreadyExistsCheck(name, uuid) != -1 {
-			fmt.Println("Duplicate creation of user on one machine caught. Change username to procceed")
-			_, err = fmt.Scan(&name)
-		}
-		if err != nil {
-			os.Exit(1)
-		}
-		password = HashInfo(password)
-		createAccount(name, password, uuid)
-	} else {
-		_, err = fmt.Scan(&password)
-		//fmt.Println(password)
-		password = HashInfo(password)
-		if err != nil {
-			os.Exit(1)
-		}
-	}
-	err = setCurrentUsersId(name, password, uuid)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-/*
 Creates an account in the database with specifid username/uuid.
 uuid is unique to the computer, and is used on startup to indentify the pc.
 */
-func createAccount(username string, password string, uuid string) {
+func CreateAccount(username string, password string) error {
 
+	// Hashes password
+	password = HashInfo(password)
+
+	// Retrievs UUID and hashes it
+	uuid, err := getUUID()
+	if err != nil {
+		return err
+	}
+	uuid = HashInfo(uuid)
+	if alreadyExistsCheck(username, uuid) == 0 {
+		return errors.New("User already exist")
+	}
 	// Creates the friend code so that this user can be added as a friend
 	code := generateFriendCode()
 
 	// Inserts that data inside of the datbase
-	_, err := conn.Exec("INSERT INTO users (name, password, friend_code, uuid) VALUES ($1, $2, $3, $4)", username, password, code, uuid)
+	_, err = conn.Exec("INSERT INTO users (name, password, friend_code, uuid) VALUES ($1, $2, $3, $4)", username, password, code, uuid)
 	if err != nil {
-		fmt.Printf("Failed to create account", err)
+		return err
 	}
+	return nil
 }
 
 // Retrieves a user's freind code based on their name, which is passed in
@@ -197,13 +157,20 @@ func alreadyExistsCheck(name string, uuid string) (userID int) {
 	}
 	return
 }
-func setCurrentUsersId(name string, password string, uuid string) error {
+func SetCurrentUsersId(name string, password string) error {
+	// Retrievs UUID and hashes it
+	uuid, err := getUUID()
+	if err != nil {
+		return err
+	}
+	uuid = HashInfo(uuid)
+	password = HashInfo(password)
 	row := conn.QueryRow(
 		`SELECT id 
 		FROM users 
 		WHERE name=$1 AND password=$2 AND uuid=$3`, name, password, uuid)
 
-	err := row.Scan(&current_user)
+	err = row.Scan(&current_user)
 
 	if err != nil {
 		return errors.New("Username or password is wrong\n")

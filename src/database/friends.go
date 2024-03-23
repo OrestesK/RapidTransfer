@@ -83,12 +83,12 @@ func GetFriendsList(id int) ([]Friend, error) {
 		SELECT users.name, users.friend_code
 		FROM users
 		JOIN friends ON users.id = friends.user_two
-		WHERE friends.user_one = 2
+		WHERE friends.user_one = $1
 		UNION
 		SELECT users.name, users.friend_code
 		FROM users
 		JOIN friends ON users.id = friends.user_one
-		WHERE friends.user_two = 2
+		WHERE friends.user_two = $1
 	) AS combined_data
 	GROUP BY name, friend_code`
 

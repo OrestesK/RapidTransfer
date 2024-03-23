@@ -12,8 +12,11 @@ import (
 )
 
 // displays friends list
-func displayFriends(user int) {
-	friendsList := database.GetFriendsList(user)
+func displayFriends(user int) error {
+	friendsList, err := database.GetFriendsList(user)
+	if err != nil {
+		return err
+	}
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"Name", "Friend Code"})
@@ -24,11 +27,15 @@ func displayFriends(user int) {
 		})
 	}
 	t.Render()
+	return nil
 }
 
 // displays inbox
-func displayInbox(user int) {
-	inbox := database.GetPendingTransfers(user)
+func displayInbox(user int) error {
+	inbox, err := database.GetPendingTransfers(user)
+	if err != nil {
+		return err
+	}
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.AppendHeader(table.Row{"From", "File Name"})
@@ -38,6 +45,7 @@ func displayInbox(user int) {
 		})
 	}
 	t.Render()
+	return nil
 }
 
 func appStartup() {
@@ -91,7 +99,11 @@ func appStartup() {
 				Usage:   "user, u {Displays user information}",
 				Aliases: []string{"u"},
 				Action: func(c *cli.Context) error {
-					fmt.Printf("| Username   %s | Friend code   %s |\n", database.GetUserNameByID(user), database.GetUserFriendCode(user))
+					result, err := database.GetUserFriendCode(user)
+					if err != nil {
+						return err
+					}
+					fmt.Printf("| Username   %s | Friend code   %s |\n", database.GetUserNameByID(user), result)
 					return nil
 				},
 			},
@@ -153,7 +165,10 @@ func appStartup() {
 						Aliases: []string{"l"},
 						Usage:   "inbox list, l {Lists all messages in inbox}",
 						Action: func(c *cli.Context) error {
-							displayInbox(user)
+							err := displayInbox(user)
+							if err != nil {
+								return err
+							}
 							fmt.Println("Inbox has been displayed")
 							return nil
 						},
@@ -205,7 +220,10 @@ func appStartup() {
 						Aliases: []string{"l"},
 						Usage:   "friend list, l {Lists all friends}",
 						Action: func(c *cli.Context) error {
-							displayFriends(user)
+							err := displayFriends(user)
+							if err != nil {
+								return err
+							}
 							fmt.Println("Friends list has been displayed")
 							return nil
 						},
@@ -238,7 +256,7 @@ func appStartup() {
 func main() {
 	err := database.InitializeDatabase()
 	if err != nil {
-		fmt.println(err)
+		fmt.Println(err)
 	}
 	appStartup()
 }

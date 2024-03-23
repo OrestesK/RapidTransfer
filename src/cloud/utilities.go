@@ -37,7 +37,11 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 	key, _ := GenerateKey()
 
 	// Makes sure user is allowed to send the file before procceding
-	if !database.PerformTransaction(from_user_id, user_to, name_of_item, key) {
+	result, err := database.PerformTransaction(from_user_id, user_to, name_of_item, key)
+	if err != nil {
+		return err, false
+	}
+	if !result {
 		return nil, false
 	}
 
@@ -65,7 +69,7 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 	cmd.Stderr = &stderr
 
 	// Runs cmd command
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return err, false
 	}

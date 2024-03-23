@@ -1,17 +1,19 @@
 package database
 
 import (
+	custom "Rapid/src/handling"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
-	"errors"
-	"fmt"
 	"math/rand"
 	"os/exec"
 	"runtime"
 	"strings"
 	"time"
 )
+
+// Stores the current users id
+var current_user int
 
 /*
 Returns users UUID by first checking what system they are on
@@ -24,7 +26,7 @@ func getUUID() (string, error) {
 		out := string(b)
 
 		if err != nil {
-			return "", nil
+			return "", err
 		} else {
 			result := strings.Split(out, "\n")
 			return result[1], nil
@@ -36,7 +38,7 @@ func getUUID() (string, error) {
 		out := string(b)
 
 		if err != nil {
-			return "", nil
+			return "", err
 		} else {
 			return out, nil
 		}
@@ -47,7 +49,7 @@ func getUUID() (string, error) {
 		out := string(b)
 
 		if err != nil {
-			return "", nil
+			return "", err
 		} else {
 			return out, nil
 		}
@@ -56,19 +58,20 @@ func getUUID() (string, error) {
 	}
 }
 
-var current_user int
-
-// Retrieves a user's name based on their id, which is passed in
-func GetUserNameByID(id int) (userName string) {
-	conn.QueryRow("SELECT name FROM users WHERE id=$1", id).Scan(&userName)
+/*
+Retrieves a user's name based on their id, which is passed in
+*/
+func GetUserNameByID(id int) (name string) {
+	query := `SELECT name FROM users WHERE id=$1`
+	conn.QueryRow(query, id).Scan(&name)
 	return
 }
 
+/*
+Generates a random friend code that will be assigned to a user during account creation
+*/
 func generateFriendCode() string {
 	rand.Seed(time.Now().UnixNano())
-
-	// Define characters that can be part of the friend code
-	// You can customize this based on your requirements
 	allowedChars := "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 	// Generate a random 8-character string
@@ -84,100 +87,102 @@ func generateFriendCode() string {
 Hashes using the SHA256 package
 */
 func HashInfo(text string) string {
-
-	// Inits the hash
 	h := sha256.New()
-
-	// Bytes to string
 	h.Write([]byte(text))
 	z := h.Sum(nil)
-
 	hashString := hex.EncodeToString(z)
-	// Convert to string before returning
+
 	return hashString
 }
 
 /*
-Creates an account in the database with specifid username/uuid.
-uuid is unique to the computer, and is used on startup to indentify the pc.
+Creates an account in the database
+uuid is unique to the computer, and is used on startup to indentify the device
 */
 func CreateAccount(username string, password string) error {
-
-	// Hashes password
 	password = HashInfo(password)
-
-	// Retrievs UUID and hashes it
 	uuid, err := getUUID()
 	if err != nil {
 		return err
 	}
 	uuid = HashInfo(uuid)
-	if alreadyExistsCheck(username, uuid) == 0 {
-		return errors.New("User already exist")
+	result, _ := alreadyExistsCheck(username, uuid)
+	if result == 0 {
+		return custom.NewError("User already exist")
 	}
-	// Creates the friend code so that this user can be added as a friend
 	code := generateFriendCode()
 
 	// Inserts that data inside of the datbase
-	_, err = conn.Exec("INSERT INTO users (name, password, friend_code, uuid) VALUES ($1, $2, $3, $4)", username, password, code, uuid)
+	query := `INSERT INTO users (name, password, friend_code, uuid) VALUES ($1, $2, $3, $4)`
+	_, err = conn.Exec(query, username, password, code, uuid)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// Retrieves a user's freind code based on their name, which is passed in
-func GetUserFriendCode(user_id int) (friend_code string) {
-	err := conn.QueryRow("SELECT friend_code FROM users WHERE id=$1", user_id).Scan(&friend_code)
+/*
+Retrieves a user's freind code based on their name, which is passed in
+*/
+func GetUserFriendCode(id int) (string, error) {
+	var code string
+	query := `SELECT friend_code FROM users WHERE id=$1`
+	err := conn.QueryRow(query, id).Scan(&code)
 	if err != nil {
-		panic("Failed at GetUserFriendCode")
+		return "", err
 	}
-	return
+	return code, nil
 }
 
-// Retrieves a user's id based on their name, which is passed in
-func GetUserID(name string) (userID int) {
-	err := conn.QueryRow("SELECT id FROM users WHERE name=$1", name).Scan(&userID)
+/*
+Retrieves a user's id based on their name, which is passed in
+*/
+func GetUserID(name string) (int, error) {
+	var id int
+	query := `SELECT id FROM users WHERE name=$1`
+	err := conn.QueryRow(query, name).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			fmt.Println("User not found")
-			return -1
+			return id, custom.NewError("User not found")
 		}
-		fmt.Println("Error retrieving user ID:", err)
-		return -1
+		return id, err
 	}
-	return userID
+	return id, nil
 }
 
-// Retrieves a user's id based on their name, which is passed in
-func alreadyExistsCheck(name string, uuid string) (userID int) {
-	err := conn.QueryRow("SELECT id FROM users WHERE name=$1 AND uuid=$2", name, uuid).Scan(&userID)
+/*
+If user does not exist, the id returns 0, this is because sql cannot have a null primary id
+*/
+func alreadyExistsCheck(name string, uuid string) (int, error) {
+	var id int
+	query := `SELECT id FROM users WHERE name=$1 AND uuid=$2`
+	err := conn.QueryRow(query, name, uuid).Scan(&id)
 	if err != nil {
-		return -1
+		return id, err
 	}
-	return
+	return id, nil
 }
+
+/*
+Sets the user who is currently logged in
+*/
 func SetCurrentUsersId(name string, password string) error {
-	// Retrievs UUID and hashes it
 	uuid, err := getUUID()
 	if err != nil {
 		return err
 	}
 	uuid = HashInfo(uuid)
 	password = HashInfo(password)
-	row := conn.QueryRow(
-		`SELECT id 
-		FROM users 
-		WHERE name=$1 AND password=$2 AND uuid=$3`, name, password, uuid)
-
-	err = row.Scan(&current_user)
-
+	query := `SELECT id FROM users WHERE name=$1 AND password=$2 AND uuid=$3`
+	err = conn.QueryRow(query, name, password, uuid).Scan(&current_user)
 	if err != nil {
-		return errors.New("Username or password is wrong\n")
+		return custom.NewError("Username or password is wrong")
 	}
+
 	return nil
 }
 
+// Returns the current users id
 func GetCurrentId() int {
 	return current_user
 }

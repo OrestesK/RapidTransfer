@@ -1,71 +1,65 @@
 package database
 
-import (
-	"fmt"
-
-	"github.com/jackc/pgx"
-)
-
 type Transaction struct {
 	From_user string
 	File_name string
 }
 
-// GetPendingTransfers retrieves pending file transfer requests for a given user id.
-func GetPendingTransfers(user_id int) (inbox []Transaction) {
-	// Retrieves pending requests from the database
-	rows, err := conn.Query(`SELECT name, filename
+/*
+retrieves pending file transfer requests for a certain user
+*/
+func GetPendingTransfers(id int) ([]Transaction, error) {
+	query := `
+	SELECT name, filename
 	FROM transfer 
 	INNER JOIN users ON transfer.from_user = users.id
-	WHERE to_user=$1`, user_id)
+	WHERE to_user=$1`
+	rows, err := conn.Query(query, id)
 
 	if err != nil {
-		fmt.Println("Error:", err)
-		return nil
+		return nil, err
 	}
 	defer rows.Close()
 
+	// Formats all the transaction details and appends to struct list
+	var inbox []Transaction
 	for rows.Next() {
 		var transaction Transaction
 		if err := rows.Scan(&transaction.From_user, &transaction.File_name); err != nil {
-			fmt.Println("Error scanning row:", err)
-			continue
+			return nil, err
 		}
 		inbox = append(inbox, transaction)
 	}
 	if err := rows.Err(); err != nil {
-		fmt.Println("Error iterating over rows:", err)
+		return nil, err
 	}
 
-	return inbox
+	return inbox, nil
 }
 
 /*
-UserCanViewTransaction checks if a user has the right to view a transaction.
-It verifies the user's involvement in the transaction using their ID and the key of a transaction.
+Checks if a user has the right to view a transaction
 */
-func UserCanViewTransaction(userId int, filename string) bool {
-	row := conn.QueryRow("SELECT id FROM transfer WHERE (from_user = $1 OR to_user = $2) AND filename = $3", userId, userId, filename)
+func UserCanViewTransaction(id int, filename string) bool {
+	query := `SELECT id FROM transfer WHERE (from_user = $1 OR to_user = $2) AND filename = $3`
+	row := conn.QueryRow(query, id, id, filename)
 
 	// dummy value that will store the id and is not checked (just used to check if no rows)
-	var id int
-	err := row.Scan(&id)
-	if err != nil {
-		if err == pgx.ErrNoRows {
-			// Then user cannot view transaction
-			return false
-		}
+	var temp int // Temp cannot be null since sql does not support null primary keys
+	err := row.Scan(&temp)
+	if err != nil || temp == 0 {
+		return false
 	}
-	// User can see transaction
+
 	return true
 }
 
-// Deletes a transaction record based on the given id.
+/*
+Deletes a transaction record based on the given id
+*/
 func DeleteTransaction(key string) error {
-	// Deletes from table
-	_, err := conn.Exec("DELETE FROM transfer WHERE key = $1", key)
-
-	// Logs the error
+	query := `DELETE FROM transfer WHERE key = $1`
+	_, err := conn.Exec(query, key)
 	if err != nil {
 		return err
 	}
@@ -73,30 +67,30 @@ func DeleteTransaction(key string) error {
 }
 
 /*
-PerformTransaction allows two users to send files to each other.
+Enters the information of a transaction to the database for later referal
 */
-func PerformTransaction(from_user_id int, user_to string, filename string, key string) bool {
-	to_user_id := GetUserID(user_to)
+func PerformTransaction(from_user_id int, user_to string, filename string, key string) (bool, error) {
+	to_user_id, _ := GetUserID(user_to)
 
-	// Checks if users are mutual friends
 	if AreMutualFriends(from_user_id, to_user_id) {
-		// Inserts the transaction record into the database
-		_, err := conn.Exec("INSERT INTO transfer (from_user, to_user, key, filename) VALUES ($1,$2,$3,$4)", from_user_id, to_user_id, key, filename)
+		query := `INSERT INTO transfer (from_user, to_user, key, filename) VALUES ($1,$2,$3,$4)`
+		_, err := conn.Exec(query, from_user_id, to_user_id, key, filename)
 		if err != nil {
-			fmt.Println(err)
-			return false
+			return false, err
 		}
-		return true
+		return true, nil
 	}
-	return false
+	return false, nil
 }
 
+/*
+Retrieves decription key from the database that is used to decrypt the file
+*/
 func RetrieveKey(filename string, to_user int) (string, error) {
-	row := conn.QueryRow("SELECT key FROM transfer WHERE to_user = $1 AND filename = $2", to_user, filename)
-
-	// dummy value that will store the id and is not checked (just used to check if no rows)
 	var key string
-	err := row.Scan(&key)
+	query := `SELECT key FROM transfer WHERE to_user = $1 AND filename = $2`
+	err := conn.QueryRow(query, to_user, filename).Scan(&key)
+
 	if err != nil {
 		return "", err
 	}

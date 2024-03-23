@@ -236,6 +236,9 @@ func appStartup() {
 
 // Main method for runnning the system
 func main() {
-	database.InitializeDatabase()
+	err := database.InitializeDatabase()
+	if err != nil {
+		fmt.println(err)
+	}
 	appStartup()
 }

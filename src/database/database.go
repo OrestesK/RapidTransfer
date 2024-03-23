@@ -68,19 +68,18 @@ func parseSqlFile(sql *Sql, path string) error {
 }
 
 // Inits all of the tables for the database
-func InitializeDatabase() {
+func InitializeDatabase() error {
 	var content embed.FS
 	path, _ := content.ReadFile("database.sql")
 	conn, err := GetConn()
 	if err != nil {
-		fmt.Println("Error connecting to the database:", err)
-		os.Exit(1)
+		return fmt.Errorf("Error connecting to the database: %v", err)
 	}
 
 	// Execute the SQL file
 	_, err = conn.Exec(string(path))
 	if err != nil {
-		fmt.Println("Error executing SQL file:", err)
-		os.Exit(1)
+		return fmt.Errorf("Error executing SQL file: %v", err)
 	}
+	return nil
 }

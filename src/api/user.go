@@ -1,7 +1,6 @@
 package database
 
 import (
-	custom "Rapid/src/handling"
 	"bufio"
 	"crypto/sha256"
 	"database/sql"
@@ -13,6 +12,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	custom "github.com/Zaikoa/rapid/src/handling"
 )
 
 // Stores the current users id

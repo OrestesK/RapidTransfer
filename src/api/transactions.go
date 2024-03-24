@@ -1,6 +1,6 @@
 package database
 
-import custom "Rapid/src/handling"
+import custom "github.com/Zaikoa/rapid/src/handling"
 
 type Transaction struct {
 	From_user string

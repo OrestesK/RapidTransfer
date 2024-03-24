@@ -1,12 +1,14 @@
 package main
 
 import (
-	database "Rapid/src/api"
-	"Rapid/src/cloud"
-	custom "Rapid/src/handling"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	custom "github.com/Zaikoa/rapid/src/handling"
+
+	database "github.com/Zaikoa/rapid/src/api"
+	"github.com/Zaikoa/rapid/src/cloud"
 
 	"github.com/jedib0t/go-pretty/table"
 	"github.com/urfave/cli/v2"

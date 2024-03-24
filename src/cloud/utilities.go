@@ -1,9 +1,6 @@
 package cloud
 
 import (
-	database "Rapid/src/api"
-	custom "Rapid/src/handling"
-	encription "Rapid/src/transfer"
 	"bytes"
 	"crypto/rand"
 	"encoding/hex"
@@ -13,6 +10,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	database "github.com/Zaikoa/rapid/src/api"
+	custom "github.com/Zaikoa/rapid/src/handling"
+	encription "github.com/Zaikoa/rapid/src/transfer"
 )
 
 // Generates a random 32 character string for encryption purposes

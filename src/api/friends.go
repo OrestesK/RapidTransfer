@@ -1,8 +1,9 @@
 package database
 
 import (
-	custom "Rapid/src/handling"
 	"database/sql"
+
+	custom "github.com/Zaikoa/rapid/src/handling"
 )
 
 /*

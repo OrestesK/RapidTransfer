@@ -1,18 +1,23 @@
-# Use the official Golang image as a base image
-FROM golang:latest
+FROM golang:latest AS build
 
-# Set the working directory inside the container
-WORKDIR /go/src/rapid
+WORKDIR /app
 
-# Copy the go.mod and go.sum files to the container's workspace
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum ./
 
-# Download dependencies
+RUN cat go.mod && cat go.sum
+
 RUN go mod download
 
-# Copy the rest of the source code to the container's workspace
-COPY src .
+COPY src/ ./src/
 
-# Enter shell for debugging
-CMD ["sh"]
+RUN CGO_ENABLED=0 GOOS=linux go build -o app ./src/main.go
+
+FROM alpine:latest
+
+WORKDIR /root/
+
+COPY --from=build /app/app .
+
+EXPOSE 8080
+
+CMD ["./app"]

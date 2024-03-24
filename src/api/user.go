@@ -2,10 +2,13 @@ package database
 
 import (
 	custom "Rapid/src/handling"
+	"bufio"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"math/rand"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -62,7 +65,7 @@ func getUUID() (string, error) {
 Retrieves a user's name based on their id, which is passed in
 */
 func GetUserNameByID(id int) (name string) {
-	query := `SELECT name FROM users WHERE id=$1`
+	query := `SELECT username FROM users WHERE id=$1`
 	conn.QueryRow(query, id).Scan(&name)
 	return
 }
@@ -106,15 +109,21 @@ func CreateAccount(username string, password string) error {
 		return err
 	}
 	uuid = HashInfo(uuid)
-	result, _ := alreadyExistsCheck(username, uuid)
-	if result == 0 {
-		return custom.NewError("User already exist")
+	result, _ := alreadyExistsCheck(username)
+	if result != 0 {
+		return custom.NewError("Username has been taken")
 	}
 	code := generateFriendCode()
 
+	fmt.Print("Enter in nickname >> ")
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	text := scanner.Text()
+	nickname := strings.Trim(text, "\n") // Trims newline from extracted nickname
+
 	// Inserts that data inside of the datbase
-	query := `INSERT INTO users (name, password, friend_code, uuid) VALUES ($1, $2, $3, $4)`
-	_, err = conn.Exec(query, username, password, code, uuid)
+	query := `INSERT INTO users (username, nickname, password, friend_code, uuid) VALUES ($1, $2, $3, $4, $5)`
+	_, err = conn.Exec(query, username, nickname, password, code, uuid)
 	if err != nil {
 		return err
 	}
@@ -125,7 +134,14 @@ func CreateAccount(username string, password string) error {
 Retrieves a user's freind code based on their name, which is passed in
 */
 func GetUserFriendCode(id int) (string, error) {
+	if id == 0 {
+		return "", custom.NewError("User must be logged in to use this method")
+	}
+
 	var code string
+	if id == 0 {
+		return "", custom.NewError("User must be logged in to use this method")
+	}
 	query := `SELECT friend_code FROM users WHERE id=$1`
 	err := conn.QueryRow(query, id).Scan(&code)
 	if err != nil {
@@ -139,7 +155,7 @@ Retrieves a user's id based on their name, which is passed in
 */
 func GetUserID(name string) (int, error) {
 	var id int
-	query := `SELECT id FROM users WHERE name=$1`
+	query := `SELECT id FROM users WHERE username=$1`
 	err := conn.QueryRow(query, name).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -153,10 +169,10 @@ func GetUserID(name string) (int, error) {
 /*
 If user does not exist, the id returns 0, this is because sql cannot have a null primary id
 */
-func alreadyExistsCheck(name string, uuid string) (int, error) {
+func alreadyExistsCheck(username string) (int, error) {
 	var id int
-	query := `SELECT id FROM users WHERE name=$1 AND uuid=$2`
-	err := conn.QueryRow(query, name, uuid).Scan(&id)
+	query := `SELECT id FROM users WHERE username=$1`
+	err := conn.QueryRow(query, username).Scan(&id)
 	if err != nil {
 		return id, err
 	}
@@ -164,25 +180,72 @@ func alreadyExistsCheck(name string, uuid string) (int, error) {
 }
 
 /*
-Sets the user who is currently logged in
+Sets the user who is loggin in
 */
-func SetCurrentUsersId(name string, password string) error {
+func Login(username string, password string) error {
 	uuid, err := getUUID()
 	if err != nil {
 		return err
 	}
 	uuid = HashInfo(uuid)
+
 	password = HashInfo(password)
-	query := `SELECT id FROM users WHERE name=$1 AND password=$2 AND uuid=$3`
-	err = conn.QueryRow(query, name, password, uuid).Scan(&current_user)
-	if err != nil {
+	query := `SELECT id FROM users WHERE username=$1 AND password=$2`
+	err = conn.QueryRow(query, username, password).Scan(&current_user)
+	if err != nil || current_user == 0 {
 		return custom.NewError("Username or password is wrong")
+	}
+
+	err = deactivateSessions(uuid) // Deactivates all other sessions on device before logging in user
+	if err != nil {
+		return err
+	}
+
+	query = `UPDATE users SET session = 1, uuid=$1 WHERE username=$2` // Sets the session to active
+	_, err = conn.Exec(query, uuid, username)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
 // Returns the current users id
+func SetActiveSession() error {
+	uuid, err := getUUID()
+	if err != nil {
+		return err
+	}
+	uuid = HashInfo(uuid)
+	query := `SELECT id FROM users WHERE uuid=$1 AND session=1`
+	conn.QueryRow(query, uuid).Scan(&current_user)
+	return nil
+}
+
 func GetCurrentId() int {
 	return current_user
+}
+
+/*
+Deactivates the session of a single user
+*/
+func DeactivateSession(id int) error {
+	query := `UPDATE users SET session=0 WHERE id=$1`
+	_, err := conn.Exec(query, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+Deactivates all other user session on teh same device
+*/
+func deactivateSessions(uuid string) error {
+	query := `UPDATE users SET session=0 WHERE uuid=$1`
+	_, err := conn.Exec(query, uuid)
+	if err != nil {
+		return err
+	}
+	return nil
 }

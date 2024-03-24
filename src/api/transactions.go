@@ -1,5 +1,7 @@
 package database
 
+import custom "Rapid/src/handling"
+
 type Transaction struct {
 	From_user string
 	File_name string
@@ -9,8 +11,12 @@ type Transaction struct {
 retrieves pending file transfer requests for a certain user
 */
 func GetPendingTransfers(id int) ([]Transaction, error) {
+	if id == 0 {
+		return nil, custom.NewError("User must be logged in to use this method")
+	}
+
 	query := `
-	SELECT name, filename
+	SELECT nickname, filename
 	FROM transfer 
 	INNER JOIN users ON transfer.from_user = users.id
 	WHERE to_user=$1`

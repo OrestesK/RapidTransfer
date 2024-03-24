@@ -1,7 +1,8 @@
 package cloud
 
 import (
-	"Rapid/src/database"
+	database "Rapid/src/api"
+	custom "Rapid/src/handling"
 	encription "Rapid/src/transfer"
 	"bytes"
 	"crypto/rand"
@@ -28,6 +29,10 @@ func GenerateKey() (string, error) {
 Uploads a zip to the cloud
 */
 func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
+
+	if from_user_id == 0 {
+		return custom.NewError("User must be logged in to use this method"), false
+	}
 
 	// Formats the zipped file
 	split := strings.Split(path, "/")
@@ -87,6 +92,10 @@ func UploadToMega(path string, from_user_id int, user_to string) (error, bool) {
 }
 
 func DownloadFromMega(user int, file_name string, location string) (error, bool) {
+
+	if user == 0 {
+		return custom.NewError("User must be logged in to use this method"), false
+	}
 
 	if !database.UserCanViewTransaction(user, file_name) {
 		return nil, false
@@ -149,6 +158,11 @@ func DownloadFromMega(user int, file_name string, location string) (error, bool)
 
 // Removes the file from the cloud
 func DeleteFromMega(user int, file_name string) (bool, error) {
+
+	if user == 0 {
+		return false, custom.NewError("User must be logged in to use this method")
+	}
+
 	// Ecncryption key
 	key, err := database.RetrieveKey(file_name, user)
 	if err != nil {

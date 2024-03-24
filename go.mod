@@ -1,8 +1,11 @@
-module Rapid
+module github.com/Zaikoa/rapid
 
 go 1.22.0
 
-require github.com/jedib0t/go-pretty v4.3.0+incompatible
+require (
+	github.com/jedib0t/go-pretty v4.3.0+incompatible
+	github.com/urfave/cli/v2 v2.27.1
+)
 
 require (
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
@@ -20,7 +23,6 @@ require (
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
-	github.com/urfave/cli/v2 v2.27.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.mongodb.org/mongo-driver v1.14.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect

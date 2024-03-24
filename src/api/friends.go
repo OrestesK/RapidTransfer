@@ -8,22 +8,25 @@ import (
 /*
 Handles adding a friend to the users friend list
 */
-func AddFriend(friendCode string, sender_id int) (bool, error) {
+func AddFriend(friendCode string, id int) (bool, error) {
+	if id == 0 {
+		return false, custom.NewError("User must be logged in to use this method")
+	}
+
 	var to_friend_id int
-	var friend_name string
-	query := `SELECT id, name FROM users WHERE friend_code=$1`
-	err := conn.QueryRow(query, friendCode).Scan(&to_friend_id, &friend_name)
+	query := `SELECT id FROM users WHERE friend_code=$1`
+	err := conn.QueryRow(query, friendCode).Scan(&to_friend_id)
 
 	if err != nil || to_friend_id == 0 { // id has to be 0 if it does not exist since sql does not support null primary ids
 		return false, custom.NewError("User you are trying to add does not exist")
 	}
 
-	if AreMutualFriends(sender_id, to_friend_id) {
+	if AreMutualFriends(id, to_friend_id) {
 		return false, custom.NewError("User is already friends with the specified user")
 	}
 
 	query = `INSERT INTO friends (user_one, user_two) VALUES ($1, $2)`
-	_, err = conn.Exec(query, sender_id, to_friend_id)
+	_, err = conn.Exec(query, id, to_friend_id)
 	if err != nil {
 		return false, err
 	}
@@ -34,9 +37,13 @@ func AddFriend(friendCode string, sender_id int) (bool, error) {
 /*
 Removes a friend from users friend list
 */
-func DeleteFriend(id int, name string) (bool, error) {
+func DeleteFriend(id int, username string) (bool, error) {
+	if id == 0 {
+		return false, custom.NewError("User must be logged in to use this method")
+	}
+
 	query := `DELETE FROM friends WHERE (user_one=$1 AND user_two=$2) OR (user_one=$2 AND user_two=$1)`
-	result, err := GetUserID(name)
+	result, err := GetUserID(username)
 	if err != nil {
 		return false, err
 	}
@@ -78,19 +85,19 @@ Retrieves a list of friends for a given user
 */
 func GetFriendsList(id int) ([]Friend, error) {
 	query := `
-	SELECT name, friend_code
+	SELECT nickname, friend_code
 	FROM (
-		SELECT users.name, users.friend_code
+		SELECT users.nickname, users.friend_code
 		FROM users
 		JOIN friends ON users.id = friends.user_two
 		WHERE friends.user_one = $1
 		UNION
-		SELECT users.name, users.friend_code
+		SELECT users.nickname, users.friend_code
 		FROM users
 		JOIN friends ON users.id = friends.user_one
 		WHERE friends.user_two = $1
 	) AS combined_data
-	GROUP BY name, friend_code`
+	GROUP BY nickname, friend_code`
 
 	rows, err := conn.Query(query, id)
 	if err != nil {

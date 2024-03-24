@@ -1,8 +1,9 @@
 package main
 
 import (
+	database "Rapid/src/api"
 	"Rapid/src/cloud"
-	"Rapid/src/database"
+	custom "Rapid/src/handling"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,6 +14,10 @@ import (
 
 // displays friends list
 func displayFriends(user int) error {
+	if user == 0 {
+		return custom.NewError("User must be logged in to use this method")
+	}
+
 	friendsList, err := database.GetFriendsList(user)
 	if err != nil {
 		return err
@@ -32,6 +37,10 @@ func displayFriends(user int) error {
 
 // displays inbox
 func displayInbox(user int) error {
+	if user == 0 {
+		return custom.NewError("User must be logged in to use this method")
+	}
+
 	inbox, err := database.GetPendingTransfers(user)
 	if err != nil {
 		return err
@@ -49,20 +58,43 @@ func displayInbox(user int) error {
 }
 
 func appStartup() {
-	var user int = 1
-	result, _ := os.UserHomeDir()
+	var user int
+	userDir, _ := os.UserHomeDir()
+
 	app := &cli.App{
+		Before: func(c *cli.Context) error {
+			err := database.SetActiveSession()
+			if err != nil {
+				return err
+			}
+			user = database.GetCurrentId()
+			return nil
+		},
 		Commands: []*cli.Command{
 			{
 				Name:  "login",
 				Usage: "login [Username] [Password] {Login to a users account}",
 				Action: func(c *cli.Context) error {
-					err := database.SetCurrentUsersId(c.Args().First(), c.Args().Get(1))
+					err := database.Login(c.Args().First(), c.Args().Get(1))
 					if err != nil {
 						return err
 					}
 					user = database.GetCurrentId()
 					fmt.Printf("Currently Logged in as %s\n", database.GetUserNameByID(user))
+
+					return nil
+				},
+			},
+			{
+				Name:  "logout",
+				Usage: "logout {logs current user out of their session}",
+				Action: func(c *cli.Context) error {
+					err := database.DeactivateSession(user)
+					if err != nil {
+						return err
+					}
+					fmt.Printf("User %s has been logged out\n", database.GetUserNameByID(user))
+
 					return nil
 				},
 			},
@@ -75,7 +107,7 @@ func appStartup() {
 						return err
 					}
 
-					err = database.SetCurrentUsersId(c.Args().First(), c.Args().Get(1))
+					err = database.Login(c.Args().First(), c.Args().Get(1))
 					if err != nil {
 						return err
 					}
@@ -234,10 +266,11 @@ func appStartup() {
 
 		Flags: []cli.Flag{
 			&cli.StringFlag{
+
 				Name:        "key",
 				Usage:       "-key, -k [Path To Key] {Specifies path to encryption key}",
-				Value:       filepath.Join(result, "Rapid", "supersecretekey.txt"),
-				Destination: &result,
+				Value:       filepath.Join(userDir, "Rapid", "supersecretekey.txt"),
+				Destination: &userDir,
 				Aliases:     []string{"k"},
 			},
 		},
